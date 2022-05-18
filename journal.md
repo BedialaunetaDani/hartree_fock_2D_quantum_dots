@@ -7,6 +7,7 @@
 
 ### Progress
 
+(due 23 May 2022, 23:59)
 
 ## Week 2
 
@@ -16,6 +17,7 @@
 ### Progress
 
 
+(due 30 May 2022, 23:59)
 
 ## Week 3
 
@@ -25,4 +27,5 @@
 ### Progress
 
 
+(due 6 June 2022, 23:59)
 
