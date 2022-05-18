@@ -4,6 +4,13 @@
 
 ### Bullet List
 
+1. Create functions for the single energy wave functions @mserraperalta
+2. Add spin to single energy wave functions @mserraperalta
+3. Search information about Fock matrix and how to implement it @abermejillo
+4. Select a method for integrating and start implementing the calculation of the elements of the Fock matrix @abermejillo
+6. Search information for a method for solving the Roothaan equations and self-consistent field @dbedialaunetar
+7. Select a method for solving the Roothaan equations and start implementing it @dbedialaunetar
+8. Join all information and preliminary results from this week in the presentation's slides @dbedialaunetar @mserraperalta @abermejillo
 
 ### Progress
 
