@@ -2,7 +2,7 @@
 
 We use the Hartree-Fock method to find the ground state energy, particle density and dipole moment of a two electron quantum dot. 
 
-The many-body wavefunction is approximated by expantion into a single particle basis of harmonic oscillators via a Slater determinant. Then the Fock matrix is computed in order to solve the Rothan equations using a self consistent field iteration. With the obtained coeficients we compute, as said, the ground state energy, the particle density and the dipole moment of the quantum dot. Having implemented this initial calculations we could potentially go further and find more properties of quantum dots such as the energy of excited states.
+The many-body wavefunction is approximated by expantion into a single particle basis of harmonic oscillators via a Slater determinant. Then the Fock matrix is computed in order to solve the Roothasn equations using a self consistent field iteration. With the obtained coeficients we compute, as said, the ground state energy, the particle density and the dipole moment of the quantum dot. Having implemented this initial calculations we could potentially go further and find more properties of quantum dots such as the energy of excited states.
 
 
 ## Authors 
