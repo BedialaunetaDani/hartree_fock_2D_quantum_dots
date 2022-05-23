@@ -22,7 +22,6 @@
 6. The library used to diagonalize will be scipy and the convergence criteria is explained in Jos' book (@dbedialaunetar)
 
 ------------
-I don't know how to make this clear. The notation is probably not 100% okay. 
 Indices:
 - i,j: loop over electrons (N_e = number of electrons)
 - k: loop over basis elements (N_b = number of basis elements)
@@ -43,9 +42,13 @@ h_i(\bm{r_i}) = -\frac{1}{2}\nabla_i^2 + \frac{1}{2}\omega_1(x_i^2+y_i^2) + \fra
 
 We can recognise that the electrons will be confined by harmonic potentials, strongly in the z axis to make it two dimensional and more weakly in the xy plane defining the quantum dot.
 
-The basis with which the Hartree-Fock algorithm will be implmented is the solution to Schrödinger's equation of the single particle hamiltonians $`h(r_i)`$, which are nothing but Hermite polynomials
+The basis with which the Hartree-Fock algorithm will be implemented is the solution to Schrödinger's equation of the single particle hamiltonians $`h(r_i)`$, which are nothing but Hermite polynomials
 
-INTRODUCE EXACT WAVEFUNCTION WE WILL USE \phi_k = ...
+```math
+\phi_k (x,y,z) =\psi(x,n_x) \psi (y, n_y) \psi (z, n_z),
+```
+
+where $`\psi(x,n)=\frac{1}{\sqrt{2^n n! \pi }}e^{-x^2/2}\mathcal{H}_n(x)`$ and $`\mathcal{H}_n(x)=(-1)^ne^{x^2}\frac{d^n}{dx^n}\left(e^{-x^2}\right)`$.
 
 With this basis we need to solve the Roothan Equations 
 
@@ -53,7 +56,7 @@ With this basis we need to solve the Roothan Equations
 \bm{FC}=\bm{SC}\epsilon.
 ```
 
-We first need to compute the matrices $`\bm{F}`$ and $`\bm{S}`$. $`\bm{F}`$ is the fock matrix and is computed in the following way
+We first need to compute the matrices $`\bm{F}`$ and $`\bm{S}`$. $`\bm{F}`$ is the Fock matrix and is computed in the following way
 
 ```math
 F_{pq} = h_{pq} + 2J_{pq} - K_{pq},
@@ -106,9 +109,7 @@ iteratively. The solution is a vector of eigenvalues and a vector of coefficient
 
 where ''max'' refers to the maximum value of the vector. The generalized eigenvalue proble is solved using the scipy function eigh(F,S).
 
-The groundstate energy is then computed through 
-
-Jos' book way is probably the easiest: 
+Following Jos' book, the groundstate energy is then computed through
 
 ```math
 E = \frac{1}{2}\left[ \sum_{rs}h_{rs} P_{rs} + \sum_k \epsilon_k \right]
