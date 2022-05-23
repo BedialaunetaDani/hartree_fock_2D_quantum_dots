@@ -14,12 +14,12 @@
 
 ### Progress
 
-1. @mserraperalta added the single electron wave functions: [commit]()
-2. The spin does not need to be added, it is taken into accoun separately (@mserraperalta)
+1. @mserraperalta added the single electron wave functions: [commit](33ccb28197907fb20752c70115834976e01bc022)
+2. The spin does not need to be added, it is taken into account separately (@mserraperalta)
 3. There's information on how to compute it in Jos' book, [this link](https://adambaskerville.github.io/posts/HartreeFockGuide/) and this [github repository](https://schoyen.github.io/tdhf-project-fys4411/task-2-ghf-solver.html) (@abermejillo)
-4. The integration method will be recicled from the previous project, Monte Carlo Integration: [commit]()
+4. The integration method will be recycled from the previous project, Monte Carlo Integration: [commit](55eba781cacc37ae9e75f58e05325489f89b0982)
 5. There's information on how to solve the Roothaan equations in the same links as 3 (@dbedialaunetar)
-6. The library used to diagonalize will be ..INSERT.. and the convergence criteria is explained in Jos' book (@dbedialaunetar)
+6. The library used to diagonalize will be scipy and the convergence criteria is explained in Jos' book (@dbedialaunetar)
 
 ------------
 I don't know how to make this clear. The notation is probably not 100% okay. 
@@ -43,11 +43,11 @@ h_i(\bm{r_i}) = -\frac{1}{2}\nabla_i^2 + \frac{1}{2}\omega_1(x_i^2+y_i^2) + \fra
 
 We can recognise that the electrons will be confined by harmonic potentials, strongly in the z axis to make it two dimensional and more weakly in the xy plane defining the quantum dot.
 
-The basis with which the Hartree-Fock algorithm will be implmented is the solution to schrödingers equation of the single particle hamiltonians $`h(r_i)`$, which are nothing but Hermite polynomials
+The basis with which the Hartree-Fock algorithm will be implmented is the solution to Schrödinger's equation of the single particle hamiltonians $`h(r_i)`$, which are nothing but Hermite polynomials
 
 INTRODUCE EXACT WAVEFUNCTION WE WILL USE \phi_k = ...
 
-With his basis we need to solve the Roothan Equations 
+With this basis we need to solve the Roothan Equations 
 
 ```math
 \bm{FC}=\bm{SC}\epsilon.
@@ -92,9 +92,19 @@ This integrals are the bottleneck of the program and need to be properly compute
 
 In order to compute this integrals we will use the Monte Carlo Integration implemented in the previous project. We can simply sample the integrand with a random walker and then do the corresponding sum. We will have to implement a numerical approach for the laplacian, as we did in the previous project. 
 
-COMMENTS ON THE DIAGONALIZATION? There's a function in numpy: S_Val, S_vec = np.linalg.eigh(S)
+In order to solve the iterative generalized eigenvalue equation, we start with an initial choice of coefficients $`\bm{C^{(0)}}`$, with which we compute the Fock matrix. Afterwards, we solve the generalized eigenvalue equation
 
-then iterative process: F depends on C, you diagonalize update F and loop until the eigenvalues don't change too much.
+```math
+\bm{F(C^{(k-1)})}\bm{C^{(k)}}=\bm{SC^{(k)}}\epsilon^{(k)}, \quad k=1,2,3,...,
+```
+
+iteratively. The solution is a vector of eigenvalues and a vector of coefficientes for each of the eigenvalues. There exist various stopping criteria but, esentially, they consist on looking at whether the changes to the coefficientes or energies from one iteration to another are small enough. Although it is subject to change, we will use
+
+```math
+\text{max}|(\epsilon^{(k-1)}-\epsilon^{(k)})/\epsilon^{(k)}|< \text{precision},
+```
+
+where ''max'' refers to the maximum value of the vector. The generalized eigenvalue proble is solved using the scipy function eigh(F,S).
 
 The groundstate energy is then computed through 
 
