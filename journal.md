@@ -126,6 +126,13 @@ P_{pq} = 2 \sum_k C_{pk} C_{qk}^*
 
 ### Bullet List
 
+1. Calculate the $`<pr|g|qs>`$ integrals using Monte Carlo (from the previous project) and store the values in a file
+1. Create a function to get the J and K matrices and then the Fock matrix for a given set of coefficients
+1. Implement the solver for the generalized eigenvalue equation
+1. Implement the many-body ground state energy function and the density matrix
+1. Select a set of initial parameters and check that the Hartree-Fock code does not have any bugs
+1. Find some test to verify that the Hartree-Fock code works correctly
+
 
 ### Progress
 
