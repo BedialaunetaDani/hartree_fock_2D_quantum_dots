@@ -19,7 +19,7 @@
 3. There's information on how to compute it in Jos' book, [this link](https://adambaskerville.github.io/posts/HartreeFockGuide/) and this [github repository](https://schoyen.github.io/tdhf-project-fys4411/task-2-ghf-solver.html) (@abermejillo)
 4. The integration method will be recycled from the previous project, Monte Carlo Integration: [commit](55eba781cacc37ae9e75f58e05325489f89b0982)
 5. There's information on how to solve the Roothaan equations in the same links as 3 (@dbedialaunetar)
-6. The library used to diagonalize will be scipy and the convergence criteria is explained in Jos' book (@dbedialaunetar)
+6. @dbedialaunetar implemented the algorithm for solving the Roothaan equations [commit](65044a09cd30bb0807ed1a28305c181ba4336bbd)
 
 ------------
 Indices:
@@ -107,7 +107,7 @@ iteratively. The solution is a vector of eigenvalues and a vector of coefficient
 \text{max}|(\epsilon^{(k-1)}-\epsilon^{(k)})/\epsilon^{(k)}|< \text{precision},
 ```
 
-where ''max'' refers to the maximum value of the vector. The generalized eigenvalue proble is solved using the scipy function eigh(F,S).
+where ''max'' refers to the maximum value of the vector. The generalized eigenvalue problem is solved using the scipy function eigh(F,S).
 
 Following Jos' book, the groundstate energy is then computed through
 
@@ -126,12 +126,12 @@ P_{pq} = 2 \sum_k C_{pk} C_{qk}^*
 
 ### Bullet List
 
-1. Calculate the $`<pr|g|qs>`$ integrals using Monte Carlo (from the previous project) and store the values in a file
-1. Create a function to get the J and K matrices and then the Fock matrix for a given set of coefficients
-1. Implement the solver for the generalized eigenvalue equation
-1. Implement the many-body ground state energy function and the density matrix
-1. Select a set of initial parameters and check that the Hartree-Fock code does not have any bugs
-1. Find some test to verify that the Hartree-Fock code works correctly
+1. Implement functions to calculate the $`<pr|g|qs>`$ and $`h_{pq}`$ integrals using Monte Carlo (from the previous project) (@abermejillo)
+1. Implement the necessary code that, due to symmetries, avoids redundant and null integrals, and stores them in a file correctly indexed. (@dbedialaunetar)
+1. Create a function to get the J and K matrices and then the Fock matrix for a given set of coefficients (@mserraperalta)
+1. Implement the many-body ground state energy function and the density matrix (@mserraperalta)
+1. Select a set of initial parameters and check that the Hartree-Fock code does not have any bugs (@abermejillo, @mserraperalta, @dbedialaunetar)
+1. Find some test to verify that the Hartree-Fock code works correctly (helium atom, for example) (@abermejillo, @mserraperalta, @dbedialaunetar)
 
 
 ### Progress
