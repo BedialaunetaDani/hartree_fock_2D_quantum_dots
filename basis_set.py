@@ -144,18 +144,61 @@ def HO_wf(x, n, omega=OMEGA_X):
 
 def HO_wf_3D(x, y, z, nx, ny, nz, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEGA_Z):
 	"""
-	Evaluates the n^th eigenfunction of the Harmonic Oscillator at x.
-	The units of x are sqrt(hbar/m*omega). 
+	Evaluates the n^th eigenfunction of the (anisotropic) Harmonic Oscillator at x,y,z.
+	The units of x,y,z are sqrt(hbar/m*omega). 
 
 	Parameters
 	==========
-	x : float or np.ndarray
-		Values in which to evaluate eigenfunction
-	n : int
-		Number of the eigenfunction
+	x, y, z : float or np.ndarray
+		Position in which to evaluate the wave function
+	nx, ny, nz : int
+		Number of the eigenfunction for each cartesian coordinate
+	omega_x, omega_y, omega_z : float
+		Harmonic osciallation constant for each cartesian coordinate
 
 	Returns
 	=======
 	float or np.ndarray
 	"""
 	return HO_wf(x, nx, omega=omega_x)*HO_wf(y, ny, omega=omega_y)*HO_wf(z, nz, omega=omega_z)
+
+
+#######################################################################################
+# Basis functions for He from Jos book
+
+ALPHA_1 =  0.298073
+ALPHA_2 =  1.242567
+ALPHA_3 =  5.782948
+ALPHA_4 = 38.474970
+
+def He_wf(x, y, z, n):
+	"""
+	Evaluates the n^th eigenfunction of the Hydrogen atom with exponential coefficient alpha_i. 
+	The units of x are atomic units. 
+
+	Parameters
+	==========
+	x, y, z : float or np.ndarray
+		Position in which to evaluate the wave function
+	n : int
+		Number of the wave function
+
+	Returns
+	=======
+	float or np.ndarray
+	"""
+
+	if n == 1:
+		alpha = ALPHA_1
+	elif n == 2:
+		alpha = ALPHA_2
+	elif n == 3:
+		alpha = ALPHA_3
+	elif n == 4:
+		alpha = ALPHA_4
+	else:
+		alpha = None
+
+	r2 = x**2 + y**2 + z**2
+
+	return np.exp(-alpha*r2)
