@@ -21,14 +21,20 @@
 5. There's information on how to solve the Roothaan equations in the same links as 3 (@dbedialaunetar)
 6. @dbedialaunetar implemented the algorithm for solving the Roothaan equations [commit](65044a09cd30bb0807ed1a28305c181ba4336bbd)
 
-------------
-Indices:
+--------
+
+The aim of this project is to use the Hartree-Fock method to compute some properties of two-dimensional quantum dots. The theory related to this project is quite extensive so, before explaining the implemented code, we will first introduce the necessary concepts to understand its structure.
+
+**Theoretical background**
+
+
+List of indices:
 - i,j: loop over electrons (N_e = number of electrons)
 - k: loop over basis elements (N_b = number of basis elements)
 - p,q,r,s: loop the matrices (so also counting the basis N_b X N_b)
---------------
 
-The aim of this project is to use the Hartree-Fock method to compute some properties of two-dimensional quantum dots. The hamiltonian of $`N_e`$ electrons in such a system is given by 
+
+ The hamiltonian of $`N_e`$ electrons in such a system is given by 
 
 ```math
 \hat{H}(\bm{r_i})=\sum_{i=1}^{N_e}h_i(\bm{r_i}) + \sum_{i<j}^{N_e} \frac{1}{\bm{r_{ij}}}, 
@@ -93,7 +99,7 @@ which takes account of the normalization.
 
 This integrals are the bottleneck of the program and need to be properly computed beforehand and stored in a text file. Many integrals can be avoided due to symmetry arguments, reducing considerably the amount of computations required. As a drawback the book keeping gets more difficult.
 
-In order to compute this integrals we will use the Monte Carlo Integration implemented in the previous project. We can simply sample the integrand with a random walker and then do the corresponding sum. We will have to implement a numerical approach for the laplacian, as we did in the previous project. 
+In order to compute this integrals we will use the Monte Carlo Integration implemented in the previous project. We can simply sample the integrand with a random walker and then do the corresponding sum. We will also have to implement a numerical approach for the laplacian, as we did in the previous project. 
 
 In order to solve the iterative generalized eigenvalue equation, we start with an initial choice of coefficients $`\bm{C^{(0)}}`$, with which we compute the Fock matrix. Afterwards, we solve the generalized eigenvalue equation
 
@@ -121,6 +127,19 @@ where P_rs stands for a density matrix in the RHF from
 P_{pq} = 2 \sum_k C_{pk} C_{qk}^*
 ```
 
+----------
+
+**Implemented code**
+
+The first step towards building a Hartree-Fock solver is introducing the base functions, which is done in [basis_set.py](63260f150c559d84a7e8847b0c4bac91b906c433).
+
+Once this is done we are prepared to compute the necessary integrals $`h_{pq}`$ and $`\braket{pr|g|qs}`$, for which we import the [Monte Carlo library](55eba781cacc37ae9e75f58e05325489f89b0982) implemented in the previous project.
+
+This leads to the computation of several matrices, which form a generalized egenvalue problem that is solved iteratively using eigh(F,S). This was implemented in the function [solve_roothaan_equations](65044a09cd30bb0807ed1a28305c181ba4336bbd).
+
+The basis functions are built from Hermite polynomials that can be computed in several ways: FIRST APPROACH AND SECOND APROACH. We implemented [timing.py](558046059d7503cc8c8dfd101ced83fab0027a61), where we analyse which of those is less time consuming. The result is simply that CONCLUSION OF THE TIMING. This file is also where we will analyse the efficiency of teh code from now on. 
+
+Finally, in [checks.ipynb](558046059d7503cc8c8dfd101ced83fab0027a61), we will perform different checks to ensure that already implemented code works as expected. This week it contains a check of the basis functions in which we plot several Hermite polynomials and perform a basic integrations in order to ensure that they are properly normalized, the outcome was in agreement with our expectations. You can refer to the jupyter notebook to see the extended results.
 
 ## Week 2
 
