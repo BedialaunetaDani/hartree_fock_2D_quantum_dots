@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.linalg import eigh
+import os
 
 
-class two_body_integrals():
+class integral_master():
 	"""
 	Calculates, stores and retrieves the values of the <pr|g|qs> integrals
 	"""
@@ -14,6 +15,11 @@ class two_body_integrals():
 		"""
 		Calculates the <pr|g|qs> integrals and stores them in file
 		"""
+
+		if file_name in os.listdir():
+			print("Integral file already exsists. Not computing the integrals. ")
+			return
+
 		return
 
 	def load_integrals(self, file_name):
@@ -84,12 +90,12 @@ def create_F_matrix(C, integrals):
 
 	for p in range(Nbasis):
 		for q in range(Nbasis):
+			F[p, q] += integrals.get_1(p, q) # add h matrix
 			for k in range(Nbasis):
 				for r in range(Nbasis):
 					for s in range(Nbasis):
 						F[p, q] += 2*np.conjugate(C[r, k])*C[s, k]*integrals.get_2(p, r, q, s) # add 2*J matrix
 						F[p, q] += -np.conjugate(C[r, k])*C[s, k]*integrals.get_2(p, r, s, q) # add -K matrix
-						F[p, q] += integrals.get_1(p, q) # add h matrix
 
 	return F
 
