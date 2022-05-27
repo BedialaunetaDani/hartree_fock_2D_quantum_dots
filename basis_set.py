@@ -117,6 +117,7 @@ def E_nml(n, m, l, omega_x=OMEGA_X, omega_z=OMEGA_Z):
 	"""
 	return omega_x*(2*n + np.abs(m) + 1) + omega_z*(l + 0.5)
 
+
 #######################################################################################
 # Harmonic oscillator wavefunctions
 
@@ -138,7 +139,7 @@ def HO_wf(x, n, omega=OMEGA_X):
 	=======
 	float or np.ndarray
 	"""
-	return Hermite_pol(x, n) * np.exp(-x**2 / 2) / np.sqrt(2**n * np.math.factorial(n) * np.sqrt(np.pi))
+	return omega**0.25 * Hermite_pol(np.sqrt(omega)*x, n) * np.exp(-omega*x**2 / 2) / np.sqrt(2**n * np.math.factorial(n) * np.sqrt(np.pi))
 
 
 def HO_wf_3D(x, y, z, nx, ny, nz, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEGA_Z):
