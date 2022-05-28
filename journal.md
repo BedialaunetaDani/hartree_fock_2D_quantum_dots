@@ -137,7 +137,7 @@ Once this is done we are prepared to compute the necessary integrals $`h_{pq}`$ 
 
 This leads to the computation of several matrices, which form a generalized egenvalue problem that is solved iteratively using eigh(F,S). This was implemented in the function [solve_roothaan_equations](65044a09cd30bb0807ed1a28305c181ba4336bbd).
 
-The basis functions are built from Hermite polynomials that can be computed in several ways: FIRST APPROACH AND SECOND APROACH. We implemented [timing.py](558046059d7503cc8c8dfd101ced83fab0027a61), where we analyse which of those is less time consuming. The result is simply that CONCLUSION OF THE TIMING. This file is also where we will analyse the efficiency of teh code from now on. 
+The basis functions are built from Hermite polynomials that can be computed in several ways: (1) using the already existing polynomials from `scipy` or `numpy`, or (2) build the polynomials using a recursive method. We implemented them [timing.py](558046059d7503cc8c8dfd101ced83fab0027a61), where we analyse which of those is less time consuming. The result is simply that it is better to use the build in `scipy` functions specially when working with high order Hermite polynomials. This file is also where we will analyse the efficiency of teh code from now on. 
 
 Finally, in [checks.ipynb](558046059d7503cc8c8dfd101ced83fab0027a61), we will perform different checks to ensure that already implemented code works as expected. This week it contains a check of the basis functions in which we plot several Hermite polynomials and perform a basic integrations in order to ensure that they are properly normalized, the outcome was in agreement with our expectations. You can refer to the jupyter notebook to see the extended results.
 
