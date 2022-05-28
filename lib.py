@@ -67,15 +67,15 @@ class integral_master():
 		return I
 
 
-def create_F_matrix(C, integrals):
+def create_F_matrix(rho, integrals):
 	"""
 	Creates the Fock matrix with coefficients C, given by
 	F[p,q] = h[p,q] + 2*J[p,q] - K[p,q]
 
 	Parameters
 	----------
-	C: np.ndarray(N, N)
-		Coefficient matrix
+	rho: np.ndarray(N, N)
+		Density matrix of the system
 	integrals : two_body_integrals() class
 		Class with all the information regarding the <pr|g|qs> integrals
 
@@ -85,17 +85,15 @@ def create_F_matrix(C, integrals):
 		Fock matrix
 	"""
 
-	Nbasis = C.shape[0]
+	Nbasis = rho.shape[0]
 	F = np.zeros((Nbasis, Nbasis))
 
 	for p in range(Nbasis):
 		for q in range(Nbasis):
 			F[p, q] += integrals.get_1(p, q) # add h matrix
-			for k in range(Nbasis):
-				for r in range(Nbasis):
-					for s in range(Nbasis):
-						F[p, q] += 2*np.conjugate(C[r, k])*C[s, k]*integrals.get_2(p, r, q, s) # add 2*J matrix
-						F[p, q] += -np.conjugate(C[r, k])*C[s, k]*integrals.get_2(p, r, s, q) # add -K matrix
+			for r in range(Nbasis):
+				for s in range(Nbasis):
+					F[p, q] += rho[r,s]*(integrals.get_2(p, q, r, s) - 0.5*integrals.get_2(p, r, q, s))
 
 	return F
 
@@ -152,9 +150,36 @@ def total_energy(rho, F, integrals):
 
 	for p in range(Nbasis):
 		for q in range(Nbasis):
-			E += rho[p,q]*(integrals.get_1(p,q) + 0.5*F[p,q])
+			E += 0.5*rho[p,q]*(integrals.get_1(p,q) + F[p,q])
 
 	return E
+
+
+def delta_rho(rho, rho_old): 
+	"""
+	Calculate change in density matrix using Root Mean Square Deviation (RMSD)
+
+	Parameters
+	----------
+	rho : np.ndarray(N, N)
+		Density matrix of the system
+	rho_old : np.ndarray(N, N)
+		Density matrix of the system in the previous SCF iteration
+
+	Returns
+	-------
+	delta : float
+		Root Mean Square Deviation (RMSD) of rho and rho_old
+	"""
+
+	Nbasis = rho.shape[0]
+	delta = 0
+
+	for p in range(Nbasis):
+		for q in range(Nbasis):
+			delta = delta + (rho[p,q] - rho_old[p,q])**2
+
+	return np.sqrt(delta)
 
 
 def solve_Roothan_eqs(file_name, C_0, S, eps, i_max = 100):

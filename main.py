@@ -1,6 +1,5 @@
 import numpy as np
 import lib
-from scipy.linalg import eigh
 
 ############################################
 
@@ -11,13 +10,14 @@ integrals_file = "integrals.csv"
 normalized_wf = True
 
 max_iter_SCF = 100
-eps_SCF = 1E-4
+eps_SCF = 1E-5
 
 ############################################
 
 # Previous calculations to HF
 integrals = lib.integral_master()
 C = np.random.rand(N_basis, N_basis)
+rho = lib.density_matrix(C, N_electrons)
 
 	# One- and Two-body integrals
 integrals.calculate(integrals_file)
@@ -34,26 +34,27 @@ else:
 
 # Self Consistent Field
 n_iterations = 0
-total_E_old = np.inf
+rho_old = np.zeros((N_basis, N_basis))
 
 while n_iterations < max_iter_SCF:
 	n_iterations += 1
 
-	F = lib.create_F_matrix(C, integrals)
+	F = lib.create_F_matrix(rho, integrals)
 	
 	if normalized_wf:
-		E, C = eigh(F, S)
+		E, C = np.linalg.eigh(F)
 	else:
 		F_prime = np.conjugate(X.transpose()) @ F @ X
-		E, C_prime = eigh(F_prime, S)
+		E, C_prime = np.linalg.eigh(F_prime)
 		C = X @ C_prime
 	
 	rho = lib.density_matrix(C, N_electrons)
 	total_E = lib.total_energy(rho, F, integrals)
 
-	if np.max(np.abs((total_E - total_E_old) / total_E)) < eps_SCF:
+	if lib.delta_rho(rho, rho_old) < eps_SCF:
 		break
 	
 	total_E_old = total_E
+	rho_old = rho
 
 	print("E = {:0.7f} | N(SCF) = {}".format(total_E, n_iterations))
