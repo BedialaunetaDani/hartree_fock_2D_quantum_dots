@@ -5,6 +5,7 @@ from scipy.linalg import eigh
 ############################################
 
 N_electrons = 2
+N_basis = 2
 integrals_file = "integrals.csv"
 
 normalized_wf = True
@@ -15,7 +16,6 @@ eps_SCF = 1E-4
 ############################################
 
 # Previous calculations to HF
-N_basis = N_electrons
 integrals = lib.integral_master()
 C = np.random.rand(N_basis, N_basis)
 
@@ -48,7 +48,7 @@ while n_iterations < max_iter_SCF:
 		E, C_prime = eigh(F_prime, S)
 		C = X @ C_prime
 	
-	rho = lib.density_matrix(C)
+	rho = lib.density_matrix(C, N_electrons)
 	total_E = lib.total_energy(rho, F, integrals)
 
 	if np.max(np.abs((total_E - total_E_old) / total_E)) < eps_SCF:

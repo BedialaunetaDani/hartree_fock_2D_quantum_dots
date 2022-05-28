@@ -100,7 +100,7 @@ def create_F_matrix(C, integrals):
 	return F
 
 
-def density_matrix(C):
+def density_matrix(C, N_electrons):
 	"""
 	Returns the density matrix of the system given its coefficients
 
@@ -108,6 +108,8 @@ def density_matrix(C):
 	----------
 	C : np.ndarray(N, N)
 		Coefficients of the system
+	N_electrons : int
+		Number of electrons in the system
 
 	Returns
 	-------
@@ -120,7 +122,7 @@ def density_matrix(C):
 
 	for p in range(Nbasis):
 		for q in range(Nbasis):
-			for k in range(Nbasis):
+			for k in range(int(N_electrons/2)):
 				rho[p,q] = 2*C[p,k]*np.conjugate(C[q,k])
 
 	return rho
