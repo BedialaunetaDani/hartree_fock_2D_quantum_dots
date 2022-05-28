@@ -38,7 +38,7 @@ class integral_master():
 			Indeces that specify the h_pq integral
 
 		Returns
-		----------
+		-------
 		I : float
 			Value of the h_pq integral
 		"""
@@ -57,7 +57,7 @@ class integral_master():
 			Indeces that specify the <pr|g|qs> integral
 
 		Returns
-		----------
+		-------
 		I : float
 			Value of the <pr|g|qs> integral
 		"""
@@ -80,7 +80,7 @@ def create_F_matrix(C, integrals):
 		Class with all the information regarding the <pr|g|qs> integrals
 
 	Returns
-	----------
+	-------
 	F: np.ndarray(N, N)
 		Fock matrix
 	"""
@@ -98,6 +98,61 @@ def create_F_matrix(C, integrals):
 						F[p, q] += -np.conjugate(C[r, k])*C[s, k]*integrals.get_2(p, r, s, q) # add -K matrix
 
 	return F
+
+
+def density_matrix(C):
+	"""
+	Returns the density matrix of the system given its coefficients
+
+	Parameters
+	----------
+	C : np.ndarray(N, N)
+		Coefficients of the system
+
+	Returns
+	-------
+	rho : np.ndarray(N, N)
+		Density matrix of the system
+	"""
+
+	Nbasis = C.shape[0]
+	rho = np.zeros((Nbasis, Nbasis))
+
+	for p in range(Nbasis):
+		for q in range(Nbasis):
+			for k in range(Nbasis):
+				rho[p,q] = 2*C[p,k]*np.conjugate(C[q,k])
+
+	return rho
+
+
+def total_energy(rho, F, integrals):
+	"""
+	Returns the density matrix of the system given its coefficients
+
+	Parameters
+	----------
+	rho : np.ndarray(N, N)
+		Density matrix of the system
+	F : np.ndarray(N, N)
+		Fock matrix
+	integrals : wo_body_integrals() class
+		Class with all the information regarding the <pr|g|qs> integrals
+
+	Returns
+	-------
+	E : float
+		Total energy of the system
+	"""
+
+	Nbasis = rho.shape[0]
+	E = 0
+
+	for p in range(Nbasis):
+		for q in range(Nbasis):
+			E += rho[p,q]*(integrals.get_1(p,q) + 0.5*F[p,q])
+
+	return E
 
 
 def solve_Roothan_eqs(file_name, C_0, S, eps, i_max = 100):
@@ -118,7 +173,7 @@ def solve_Roothan_eqs(file_name, C_0, S, eps, i_max = 100):
 		Maximum number of iterations
 
 	Returns
-	----------
+	-------
 	E: np.ndarray(N)
 		Vector with all the eigenvalues ordered from lowest to largest
 	C: np.ndarray(N, N)

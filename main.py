@@ -34,21 +34,26 @@ else:
 
 # Self Consistent Field
 n_iterations = 0
-E_old = np.inf
+total_E_old = np.inf
+
 while n_iterations < max_iter_SCF:
 	n_iterations += 1
 
 	F = lib.create_F_matrix(C, integrals)
-	if not normalized_wf:
-		F = np.conjugate(X.transpose()) @ F @ X
+	
+	if normalized_wf:
+		E, C = eigh(F, S)
+	else:
+		F_prime = np.conjugate(X.transpose()) @ F @ X
+		E, C_prime = eigh(F_prime, S)
+		C = X @ C_prime
+	
+	rho = lib.density_matrix(C)
+	total_E = lib.total_energy(rho, F, integrals)
 
-	E, C = eigh(F, S)
-
-	if np.max(np.abs((E - E_old)/E)) < eps_SCF:
+	if np.max(np.abs((total_E - total_E_old) / total_E)) < eps_SCF:
 		break
 	
-	E_old = E
-	if not normalized_wf:
-		C = X @ C
+	total_E_old = total_E
 
-	print("N(SCF) = {}".format(n_iterations))
+	print("E = {:0.7f} | N(SCF) = {}".format(total_E, n_iterations))
