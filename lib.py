@@ -11,14 +11,37 @@ class integral_master():
 	Calculates, stores and retrieves the values of the <pr|g|qs> integrals
 	"""
 	def __init__(self, dimension):
+		"""
+		Initialization of the object
+
+		Parameters
+		----------
+		dimension : int
+			Number of single basis functions
+
+		Returns
+		-------
+		None
+		"""
+
 		self.integral_dict_1 = None
 		self.integral_dict_2 = None
 		self.dimension = dimension
+
 		return
 
 	def calculate(self, file_name):
 		"""
 		Calculates the <pr|g|qs> integrals and stores them in file
+
+		Parameters
+		----------
+		file_name : str
+			File name that stores the values of the integrals
+
+		Returns
+		-------
+		None
 		"""
 
 		if file_name in os.listdir():
@@ -65,10 +88,18 @@ class integral_master():
 	def load_integrals(self, file_name):
 		"""
 		Loads the values of the integrals in this object
+
+		Parameters
+		----------
+		file_name : str
+			File name that stores the values of the integrals
+
+		Returns
+		-------
+		None
 		"""
 
-		self.integral_dict_1 = np.load(file_name)[0]
-		self.integral_dict_2 = np.load(file_name)[1]
+		self.integral_dict_1, self.integral_dict_2 = np.load(file_name)
 
 		return
 
@@ -90,8 +121,6 @@ class integral_master():
 		I = self.integral_dict_1[(p, q)]
 
 		return I
-	
-	###poner los indices com prqs
 
 	def get_2(self, p, r, q, s):
 		"""
@@ -113,7 +142,7 @@ class integral_master():
 		return I
 
 		
-	def calculate_1(self,p,q):
+	def calculate_1(self, p, q):
 		"""
 		Calculates the value of the h_pq integrals by direct integration
 
@@ -275,47 +304,3 @@ def delta_rho(rho, rho_old):
 			delta = delta + (rho[p,q] - rho_old[p,q])**2
 
 	return np.sqrt(delta)
-
-
-def solve_Roothan_eqs(file_name, C_0, S, eps, i_max = 100):
-	"""
-	Solves the iterative generalized eigenvalue problem F(C)C = E*SC
-
-	Parameters
-	----------
-	file_name: str
-		Filename where the h_pq and <pr|g|qs> integrals are stored.
-	C_0: np.ndarray(N, N)
-		Initial coefficients
-	S: np.ndarray(N, N)
-		Overlap matrix
-	eps: float
-		Precision with which to find the iterative problem
-	i_max: int
-		Maximum number of iterations
-
-	Returns
-	-------
-	E: np.ndarray(N)
-		Vector with all the eigenvalues ordered from lowest to largest
-	C: np.ndarray(N, N)
-		Matrix with the coefficients of each eigenvector ordered as E
-	"""
-
-	counter = 1
-
-	C_old = C_0
-	E_old = 0
-
-	while counter < i_max:
-		F = create_F_matrix(file_name, C_old)
-		E, C = eigh(F, S)
-
-		if np.max(np.abs((E-E_old)/E)) < eps:
-			break
-		else:
-			E_old = E
-			C_old = C
-			counter += 1
-
-	return E, C
