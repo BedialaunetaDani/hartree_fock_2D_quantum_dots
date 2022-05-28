@@ -7,8 +7,10 @@ class integral_master():
 	"""
 	Calculates, stores and retrieves the values of the <pr|g|qs> integrals
 	"""
-	def __init__(self):
-		self.integral_list = None
+	def __init__(self, dimension):
+		self.integral_dict_1 = None
+		self.integral_dict_2 = None
+		self.dimension = dimension
 		return
 
 	def calculate(self, file_name):
@@ -20,12 +22,51 @@ class integral_master():
 			print("Integral file already exsists. Not computing the integrals. ")
 			return
 
+		integral_dict_1 = {}
+		integral_dict_2 = {}
+
+		# 1-body integrals
+		for p in range(1, self.dimension+1):
+			for q in range(1, self.dimension+1):
+				if p == q:
+					I = self.calculate_1(p, q)
+				else:
+					I = 0
+
+				integral_dict_1[(p, q)] = I
+
+		# 2-body integrals
+		for p in range(1, self.dimension+1):
+			for q in range(1, p+1):
+				for r in range(1, p):
+					for s in range(1, r+1):
+						I = self.calculate_2(p, r, q, s)
+
+						integral_dict_2[(p, r, q, s)] = I
+						integral_dict_2[(q, r, p, s)] = I
+						integral_dict_2[(p, s, q, r)] = I
+						integral_dict_2[(r, p, s, q)] = I
+				r = p
+				for s in range(1, q+1):
+					I = self.calculate_2(p, r, q, s)
+					
+					integral_dict_2[(p, r, q, s)] = I
+					integral_dict_2[(q, r, p, s)] = I
+					integral_dict_2[(p, s, q, r)] = I
+					integral_dict_2[(r, p, s, q)] = I
+
+		np.save(file_name, np.array([integral_dict_1, integral_dict_2]))
+
 		return
 
 	def load_integrals(self, file_name):
 		"""
 		Loads the values of the integrals in this object
 		"""
+
+		self.integral_dict_1 = np.load(file_name)[0]
+		self.integral_dict_2 = np.load(file_name)[1]
+
 		return
 
 	def get_1(self, p, q):
@@ -43,17 +84,17 @@ class integral_master():
 			Value of the h_pq integral
 		"""
 
-		I = 0
+		I = self.integral_dict_1[(p, q)]
 
 		return I
 
-	def get_2(self, p, q, r, s):
+	def get_2(self, p, r, q, s):
 		"""
 		Returns the value of the <pr|g|qs> integrals
 
 		Parameters
 		----------
-		p, q, r, s: int
+		p, r, q, s: int
 			Indeces that specify the <pr|g|qs> integral
 
 		Returns
@@ -62,7 +103,7 @@ class integral_master():
 			Value of the <pr|g|qs> integral
 		"""
 
-		I = 0
+		I = self.integral_dict_2[(p, r, q, s)]
 
 		return I
 
