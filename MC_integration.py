@@ -10,17 +10,15 @@ import os
 
 # ---WALKER GENERATION---
 
-def random_walker(prob_density, alpha, N_steps, init_point, trial_move):
+def random_walker(function, indices, N_steps, init_point, trial_move):
 	"""
 	Returns steps of a random walker that follows a Markov chain given a probability
 	density function using the Metropolis algorithm. 
 
 	Parameters
 	----------
-	prob_density : function(r, alpha)
-		Probability density function depending on position r and parameters alpha
-	alpha : np.ndarray
-		Parameters of the trial wave functon
+	function : function(r)
+		Function integrated over r
 	N_steps : int
 		Number of steps that the random walker takes
 	init_point : np.ndarray(dim)
@@ -47,7 +45,7 @@ def random_walker(prob_density, alpha, N_steps, init_point, trial_move):
 	for i in np.arange(1, N_steps):
 
 		next_point = steps[i-1] + np.random.normal(0, trial_move, size=dim)
-		step_acceptance = prob_density(next_point, alpha)/prob_density(steps[i-1], alpha)
+		step_acceptance = function(next_point, indices)/function(steps[i-1], indices)
 		acceptance_probability[i] = min(step_acceptance,1)
 
 		if (np.random.rand(1) <= step_acceptance).all():
@@ -59,17 +57,15 @@ def random_walker(prob_density, alpha, N_steps, init_point, trial_move):
 	return steps, acceptance_probability, acceptance_ratio
 
 
-def random_walkers(prob_density, alpha, N_steps, init_points, trial_move):
+def random_walkers(function, indices, N_steps, init_points, trial_move):
 	"""
 	Returns steps of N_walkers random walkers that follows a Markov chain given a probability
 	density function using the Metropolis algorithm. 
 
 	Parameters
 	----------
-	prob_density : function(r, alpha)
-		Probability density function depending on position r and parameters alpha
-	alpha : np.ndarray(N_params)
-		Parameters of the trial wave functon
+	function : function(r)
+		Function integrated over r
 	N_steps : int
 		Number of steps that each random walker takes
 	init_point : np.ndarray(N_walkers, dim)
@@ -96,7 +92,7 @@ def random_walkers(prob_density, alpha, N_steps, init_points, trial_move):
 	for i in np.arange(1, N_steps):
 
 		next_point = steps[i-1] + np.random.normal(0, trial_move, size=(N_walkers,dim))
-		step_acceptance = np.minimum(prob_density(next_point, alpha)/prob_density(steps[i-1], alpha),1)
+		step_acceptance = np.minimum(function(next_point, indices)/function(steps[i-1], indices),1)
 		acceptance_probability[i] = step_acceptance[0]
 		to_change = np.where(np.random.rand(N_walkers) <= step_acceptance)
 
@@ -134,7 +130,7 @@ def rand_init_point(system_size, dim, N_points):
 	return init_point
 
 
-def dev_acceptance_ratio(trial_move, prob_density, alpha, dim, N_av=100):
+def dev_acceptance_ratio(trial_move, function, indices, dim, N_av=100):
 	"""
 	Returns the deviation of the acceptance ratio from 0.5 for a random walker with given N_av steps 
 
@@ -142,10 +138,8 @@ def dev_acceptance_ratio(trial_move, prob_density, alpha, dim, N_av=100):
 	----------
 	trial_move : float
 		Current initial trial move variance
-	prob_density : function(r, alpha)
-		Probability density function depending on position r and parameters alpha
-	alpha : np.ndarray
-		Parameters of the trial wave function
+	function : function(r)
+		Function integrated over r
 	dim : int
 		Dimension of the configuration space, i.e. number of degrees of freedom in the system
 	N_av : int
@@ -163,7 +157,7 @@ def dev_acceptance_ratio(trial_move, prob_density, alpha, dim, N_av=100):
 
 	for i in np.arange(1, N_av):
 		next_point = steps[i-1] + np.random.normal(scale=trial_move, size=(dim))
-		ratio = min(prob_density(next_point, alpha)/prob_density(steps[i-1], alpha),1)
+		ratio = min(function(next_point, indices)/function(steps[i-1], indices), 1)
 		if np.random.rand(1) <= ratio:
 			steps[i] = next_point
 		else:
@@ -175,16 +169,14 @@ def dev_acceptance_ratio(trial_move, prob_density, alpha, dim, N_av=100):
 	return dev_ratio
 
 
-def find_optimal_trial_move(prob_density, alpha, dim, trial_move_init, maxiter=5000, N_av=2000, tol=0.05):
+def find_optimal_trial_move(function, indices, dim, trial_move_init, maxiter=5000, N_av=2000, tol=0.05):
 	"""
 	Returns trial_move such that the corresponding acceptance ratio is 0.5+-tol. 
 
 	Parameters
 	----------
-	prob_density : function(r, alpha)
-		Probability density function depending on position r and parameters alpha
-	alpha : np.ndarray
-		Parameters of the trial wave function
+	function : function(r)
+		Function integrated over r
 	dim : int
 		Dimension of the configuration space, i.e. number of degrees of freedom in the system
 	trial_move_init : float
@@ -202,7 +194,7 @@ def find_optimal_trial_move(prob_density, alpha, dim, trial_move_init, maxiter=5
 		trial_move such that the corresponding acceptance ratio is 0.5 +- tol
 	"""
 
-	arguments = (prob_density, alpha, dim, N_av)
+	arguments = (function, indices, dim, N_av)
 
 	# Find a zero in dev_av_rate between 10*trial_move_init and trial_move_init/100,
 	# the function must be of oposite signs at the two points
@@ -213,19 +205,15 @@ def find_optimal_trial_move(prob_density, alpha, dim, trial_move_init, maxiter=5
 
 #---MONTE CARLO INTEGRATION---
 
-def MC_integration_core(E_local_f, prob_density, alpha, dim, trial_move, file_name, N_steps=5000, N_walkers=250, N_skip=0, L_start=1):
+def MC_integration_core(function, indices, dim, trial_move, file_name, N_steps=5000, N_walkers=250, N_skip=0, L_start=1):
 	"""
 	Returns expectation value of the energy E(alpha) averaged over N_walkers random walkers using Monte Carlo integration. 
 	This function is used for parallelization of the MC integration. 
 
 	Parameters
 	----------
-	E_local_f : function(r, alpha)
-		Local energy function depending on r and alpha
-	prob_density : function(r, alpha)
-		Probability density function depending on position r and parameters alpha
-	alpha : np.ndarray
-		Parameters of the trial wave function
+	function : function(r)
+		Function integrated over r
 	dim : int
 		Dimension of the configuration space, i.e. number of degrees of freedom in the system
 	trial_move : float
@@ -247,10 +235,10 @@ def MC_integration_core(E_local_f, prob_density, alpha, dim, trial_move, file_na
 	"""
 
 	init_points = rand_init_point(L_start, dim, N_walkers)
-	steps, _, acceptance_ratio = random_walkers(prob_density, alpha, N_steps, init_points, trial_move)
+	steps, _, acceptance_ratio = random_walkers(function, indices,N_steps, init_points, trial_move)
 	steps = steps[N_skip:, :, :]
 
-	E_alpha_walkers = MC_average_walkers(E_local_f, steps, alpha)
+	E_alpha_walkers = MC_average_walkers(function, steps, indices)
 
 	f = open(file_name, "w")
 	f.write("{:0.35f}\n".format(np.mean(acceptance_ratio)))
@@ -261,18 +249,14 @@ def MC_integration_core(E_local_f, prob_density, alpha, dim, trial_move, file_na
 	return 
 
 
-def MC_integration(E_local_f, prob_density, alpha, dim, N_steps=5000, N_walkers=250, N_skip=0, L_start=1, N_cores=-1, trial_move=None):
+def MC_integration(function, indices, dim, N_steps=10000, N_walkers=400, N_skip=1000, L_start=2, N_cores=-1, trial_move=None):
 	"""
 	Returns expectation value of the energy E(alpha) averaged over N_walkers random walkers using Monte Carlo integration. 
 
 	Parameters
 	----------
-	E_local_f : function(r, alpha)
-		Local energy function depending on r and alpha
-	prob_density : function(r, alpha)
-		Probability density function depending on position r and parameters alpha
-	alpha : np.ndarray
-		Parameters of the trial wave function
+	function : function(r)
+		Function integrated over r
 	dim : int
 		Dimension of the configuration space, i.e. number of degrees of freedom in the system
 	N_steps : int
@@ -301,7 +285,7 @@ def MC_integration(E_local_f, prob_density, alpha, dim, N_steps=5000, N_walkers=
 	"""
 
 	if trial_move is None:
-		trial_move = find_optimal_trial_move(prob_density, alpha, dim, 0.5*L_start) 
+		trial_move = find_optimal_trial_move(function, dim, 0.5*L_start) 
 		print("Optimal trial_move is", trial_move, end="\r")
 
 	# separate number of walkers for each core (multiprocessing)
@@ -310,7 +294,7 @@ def MC_integration(E_local_f, prob_density, alpha, dim, N_steps=5000, N_walkers=
 	N_walkers_last_core = N_walkers - (N_cores-1)*N_walkers_per_core
 	list_N_walkers = np.array([N_walkers_per_core]*(N_cores - 1) + [N_walkers_last_core])
 
-	inputs = [(E_local_f, prob_density, alpha, dim, trial_move, "output_core{}.csv".format(i), N_steps, N, N_skip, L_start) for i, N in enumerate(list_N_walkers)]
+	inputs = [(function, indices, dim, trial_move, "output_core{}.csv".format(i), N_steps, N, N_skip, L_start) for i, N in enumerate(list_N_walkers)]
 
 	# multiprocessing
 	with multiprocessing.Pool(processes=N_cores) as pool: 
@@ -338,29 +322,27 @@ def MC_integration(E_local_f, prob_density, alpha, dim, N_steps=5000, N_walkers=
 	return E_alpha, E_alpha_std, acceptance_ratio, trial_move
 
 
-def MC_average_walkers(E_local_f, steps, alpha):
+def MC_average_walkers(function, steps, indices):
 	"""
 	Computes expectation value of energy given a distribution of steps
 
 	Parameters
 	----------
-	E_local_f : function(r, alpha)
-		Local energy function depending on r and alpha
+	function : function(r)
+		Function integrated over r
 	steps : np.ndarray(N_steps, N_walkers, dim)
 		Points to be used in the computation of the integral
 		N_steps is the number of steps each walker takes
 		N_walkers is the number of walkers
 		dim is the dimension of the integral space
-	alpha : np.ndarray(N_parameters)
-		Parameters of the trial wave function
-
+	
 	Returns
 	-------
 	E_alpha : np.ndarray(N_walkers)
 		Expectation value of the energy for given parameters of the trial wave function
 	"""
 
-	E_local = E_local_f(steps, alpha) # E_local.shape = (N_steps, N_walkers)
+	E_local = function(steps, indices) # E_local.shape = (N_steps, N_walkers)
 	E_alpha_walkers = np.average(E_local, axis=0) # E_alpha_walkers.shape = (N_walkers)
 
 	return E_alpha_walkers

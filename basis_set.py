@@ -128,7 +128,7 @@ def HO_wf(x, n, omega=OMEGA_X):
 
 	Parameters
 	==========
-	x : float or np.ndarray
+	x : float or np.ndarray(N)
 		Values in which to evaluate eigenfunction
 	n : int
 		Number of the eigenfunction
@@ -137,7 +137,7 @@ def HO_wf(x, n, omega=OMEGA_X):
 
 	Returns
 	=======
-	float or np.ndarray
+	float or np.ndarray(N)
 	"""
 	return omega**0.25 * Hermite_pol(np.sqrt(omega)*x, n) * np.exp(-omega*x**2 / 2) / np.sqrt(2**n * np.math.factorial(n) * np.sqrt(np.pi))
 
@@ -149,7 +149,7 @@ def HO_wf_3D(x, y, z, nx, ny, nz, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEG
 
 	Parameters
 	==========
-	x, y, z : float or np.ndarray
+	x, y, z : float or np.ndarray(N)
 		Position in which to evaluate the wave function
 	nx, ny, nz : int
 		Number of the eigenfunction for each cartesian coordinate
@@ -158,9 +158,82 @@ def HO_wf_3D(x, y, z, nx, ny, nz, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEG
 
 	Returns
 	=======
-	float or np.ndarray
+	float or np.ndarray(N)
 	"""
 	return HO_wf(x, nx, omega=omega_x)*HO_wf(y, ny, omega=omega_y)*HO_wf(z, nz, omega=omega_z)
+
+
+def index_to_q_numbers(k):
+	"""
+	Returns the quantum numbers nx, ny, nz associated with the basis index k
+
+	Parameters
+	----------
+	k: int
+		Index of the basis from 1 to 14
+
+	Returns
+	----------
+	nz ,ny, nz : int 
+		Quantum numbers
+	"""
+
+	q_numbers = np.array([(0,0,0),(0,0,1),(0,1,0),(1,0,0),(0,1,1),(1,0,1),(1,1,0),(1,1,1),(1,1,2),(1,2,1),(2,1,1),(1,2,2),(2,1,2),(2,2,1)])
+
+	return q_numbers[k]
+
+
+def HO_wf_3D_basis(R, k, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEGA_Z):
+	"""
+	Evaluates the k^th basis function of the 3D HO at position R 
+
+	Parameters
+	----------
+	k: int
+		Index of the basis from 1 to 14
+	R: np.ndarray(3,N)
+		Position of the electron x, y, z
+		at N diferent coordinates (to evaluate random walkers simultaneously)
+
+	Returns
+	----------
+	psi : np.ndarray(N)
+		Value of the wf at N points
+	"""
+	
+	nx, ny, nz = index_to_q_numbers(k)
+	
+	psi = HO_wf_3D(R[0], R[1], R[2], nx, ny, nz, omega_x, omega_y, omega_z)
+
+	return psi
+
+
+def two_body_integrand(R, indices):
+	"""
+	Returns the value of the <pr|g|qs> integrand evaluated at R
+
+	Parameters
+	----------
+	p, q, r, s: int
+		Indices that specify the <pr|g|qs> integral
+	R: np.ndarray(6,N)
+		Positions of the two electrons x1,y1,z1,x2,y2,z2 
+		at N diferent coordinates (to evaluate random walkers simultaneously)
+
+	Returns
+	----------
+	I : np.ndarray(N)
+		
+	"""
+	p,q,r,s = indices[0],indices[1],indices[2],indices[3]
+
+	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
+	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
+	r12 = abs(r1-r2)
+
+	I = HO_wf_3D_basis(p,R[0:2])*HO_wf_3D_basis(r,R[3:5])*(1/r12)*HO_wf_3D_basis(q,R[0:2])*HO_wf_3D_basis(s,R[3:5])
+
+	return I
 
 
 #######################################################################################
@@ -202,3 +275,7 @@ def He_wf(x, y, z, n):
 	r2 = x**2 + y**2 + z**2
 
 	return np.exp(-alpha*r2)
+
+
+	######
+

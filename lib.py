@@ -1,6 +1,9 @@
 import numpy as np
 from scipy.linalg import eigh
 
+import mc_integration as mc
+import basis_set as bs
+
 
 class two_body_integrals():
 	"""
@@ -24,22 +27,25 @@ class two_body_integrals():
 
 	def get_1(self, p, q):
 		"""
-		Returns the value of the h_pq integrals
+		Returns the value of the h_pq integrals 
 
 		Parameters
 		----------
 		p, q: int
-			Indeces that specify the h_pq integral
+			Indices that specify the h_pq integral
 
 		Returns
 		----------
 		I : float
 			Value of the h_pq integral
 		"""
+		nx,ny,nz = 1,1,1
 
-		I = 0
+		I = (p==q)*(bs.OMEGA_X*(nx + ny + 1) + bs.OMEGA_Z*(nz + 0.5)) # nx,ny,nz should come from the basis, so from p and q but how?
 
 		return I
+	
+	###poner los indices com prqs
 
 	def get_2(self, p, q, r, s):
 		"""
@@ -48,7 +54,7 @@ class two_body_integrals():
 		Parameters
 		----------
 		p, q, r, s: int
-			Indeces that specify the <pr|g|qs> integral
+			Indices that specify the <pr|g|qs> integral
 
 		Returns
 		----------
@@ -56,7 +62,57 @@ class two_body_integrals():
 			Value of the <pr|g|qs> integral
 		"""
 
-		I = 0
+		
+		I=0
+
+		return I
+
+		
+	def calculate_1(self,p,q):
+		"""
+		Calculates the value of the h_pq integrals 
+
+		Parameters
+		----------
+		p, q: int
+			Indices that specify the h_pq integral
+
+		Returns
+		----------
+		I : float
+			Value of the h_pq integral
+		"""
+		nx,ny,nz = bs.index_to_q_numbers(p)
+
+		I = (p==q)*(bs.OMEGA_X*(nx + ny + 1) + bs.OMEGA_Z*(nz + 0.5)) # nx,ny,nz should come from the basis, so from p and q but how?
+
+		return I
+
+
+	def calculate_2(self, p, r, q, s):
+		"""
+		Calculates the value of the <pr|g|qs> integrals
+
+		Parameters
+		----------
+		p, q, r, s: int
+			Indices that specify the <pr|g|qs> integral
+
+		Returns
+		----------
+		I : float
+			Value of the <pr|g|qs> integral
+		"""
+
+		system_size = 5
+		N_walkers = 400
+		N_steps = 10000
+		N_skip = 1000
+		integrand = bs.two_body_integrand
+		indices = np.array([p,r,q,s])
+		dimension = 6
+		
+		I = mc.MC_integration(integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size)
 
 		return I
 
