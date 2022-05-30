@@ -231,7 +231,7 @@ def two_body_integrand(R, indices):
 	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
 	r12 = abs(r1-r2)
 
-	I = HO_wf_3D_basis(p,R[0:2])*HO_wf_3D_basis(r,R[3:5])*(1/r12)*HO_wf_3D_basis(q,R[0:2])*HO_wf_3D_basis(s,R[3:5])
+	I = HO_wf_3D_basis(R[0:3],p)*HO_wf_3D_basis(R[3:6],r)*(1/r12)*HO_wf_3D_basis(R[0:3],q)*HO_wf_3D_basis(R[3:6],s)
 
 	return I
 
@@ -277,5 +277,20 @@ def He_wf(x, y, z, n):
 	return np.exp(-alpha*r2)
 
 
+def He_wf_basis(R,k):
+	return He_wf(R[0],R[1],R[2],k)
+
+
+def He_two_body_integrand(x1,y1,z1,x2,y2,z2,p,q,r,s):
+
+	#p,q,r,s = indices[0],indices[1],indices[2],indices[3]
+	R=np.array([x1,y1,z1,x2,y2,z2])
+	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
+	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
+	r12 = abs(r1-r2)
+
+	I = He_wf_basis(R[0:3],p)*He_wf_basis(R[3:6],r)*(1/r12)*He_wf_basis(R[0:3],q)*He_wf_basis(R[3:6],s)
+
+	return I
 	######
 

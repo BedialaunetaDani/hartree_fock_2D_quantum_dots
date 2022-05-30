@@ -155,8 +155,15 @@ def dev_acceptance_ratio(trial_move, function, indices, dim, N_av=100):
 	steps = np.zeros((N_av, dim))
 	steps[0] = np.zeros(dim)
 
+	
+	print('value f 1',function(np.array([0,0,0,1,1,1]),np.array([1,1,1,1])))
+	print('value f 2',function(np.array([1,1,1,1.5,1.5,1.5]),np.array([1,1,1,1])))
+	print('value f 3',function(np.array([2,2,2,2.5,2,2]),np.array([1,1,1,1])))
+	print('value f 4',function(np.array([3,3,3,3.5,3,3]),np.array([1,1,1,1])))
+
 	for i in np.arange(1, N_av):
 		next_point = steps[i-1] + np.random.normal(scale=trial_move, size=(dim))
+		#print(next_point,function)
 		ratio = min(function(next_point, indices)/function(steps[i-1], indices), 1)
 		if np.random.rand(1) <= ratio:
 			steps[i] = next_point
@@ -165,6 +172,8 @@ def dev_acceptance_ratio(trial_move, function, indices, dim, N_av=100):
 		acceptance_ratio += ratio
 
 	dev_ratio = acceptance_ratio/N_av - 0.5
+
+	print('dev', dev_ratio)
 
 	return dev_ratio
 
@@ -198,7 +207,7 @@ def find_optimal_trial_move(function, indices, dim, trial_move_init, maxiter=500
 
 	# Find a zero in dev_av_rate between 10*trial_move_init and trial_move_init/100,
 	# the function must be of oposite signs at the two points
-	opt_trial_move = brentq(dev_acceptance_ratio, trial_move_init/1000, 10*trial_move_init, args=arguments, maxiter=maxiter, xtol=tol) 
+	opt_trial_move = brentq(dev_acceptance_ratio, trial_move_init/1000, 100*trial_move_init, args=arguments, maxiter=maxiter, xtol=tol) 
 												
 	return opt_trial_move
 
@@ -249,7 +258,7 @@ def MC_integration_core(function, indices, dim, trial_move, file_name, N_steps=5
 	return 
 
 
-def MC_integration(function, indices, dim, N_steps=10000, N_walkers=400, N_skip=1000, L_start=2, N_cores=-1, trial_move=None):
+def MC_integration(function, indices, dim, N_steps=10000, N_walkers=400, N_skip=1000, L_start=5, N_cores=-1, trial_move=None):
 	"""
 	Returns expectation value of the energy E(alpha) averaged over N_walkers random walkers using Monte Carlo integration. 
 
@@ -285,7 +294,7 @@ def MC_integration(function, indices, dim, N_steps=10000, N_walkers=400, N_skip=
 	"""
 
 	if trial_move is None:
-		trial_move = find_optimal_trial_move(function, dim, 0.5*L_start) 
+		trial_move = find_optimal_trial_move(function, indices, dim, L_start) 
 		print("Optimal trial_move is", trial_move, end="\r")
 
 	# separate number of walkers for each core (multiprocessing)
