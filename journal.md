@@ -175,7 +175,7 @@ We will have to decide how to solve this issue soon and implement a way to compu
 
 On the other hand the rest of the Hartree Fock solver is already implemented. We have a class that arranges the integrals and gets them into a file from which they can be read to compute the Fock matrix. From there, the Self Consistent Field iteration can be performed and the energy and density matrix computed. 
 
-Finally, the pieces of code that do work were used to INTRODUCE COMPUTATIONS OF HeH with integrals from the webpage!!!!!!
+Finally, the pieces of code that do work were used to calculate the energy of the He-H molecule because we could use the values of the two electron integrals, one electron integrals and overlap matrix that we found in a webpage explaining the Hartree-Fock algorithm with this example see (`check.ipynb`). After adding manually the values of the integrals in our code, we got the same results for the He-H energy compared to the website, and thus we can conclude that our code works correctly. Noteworthy, the obtained energy is different than the experimental one because the bond distance of the molecule has not been optimized. 
 
 
 (due 30 May 2022, 23:59)
