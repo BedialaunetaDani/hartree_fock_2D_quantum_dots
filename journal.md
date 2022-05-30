@@ -169,11 +169,11 @@ The most complicated step of the HF implementation is the computation of the two
 =  \int d\bm{r_1} d\bm{r_2} |\phi_p(\bm{r_1})\phi_r(\bm{r_2})|^2  \frac{\phi_q(\bm{r_1})\phi_s(\bm{r_2})}{\phi_p(\bm{r_1})\phi_r(\bm{r_2})}r_{12}^{-1}.
 ```
 
-However we are not sure whether this procedure is correct. Another way would be to follow [this paper](https://aip.scitation.org/doi/10.1063/1.5114703). In it they simply introduce another probability distribution based on a simple gaussian. Nevertheless, the paper continues doing other implementations to actually get its results, so by only implementing the first part we are not assured we will get reasonable results. 
+However we are not sure whether this procedure is correct. Another way would be to follow [this paper](https://aip.scitation.org/doi/10.1063/1.5114703). In it they simply introduce another probability distribution based on a simple gaussian. Nevertheless, the paper continues doing other implementations to actually get its results, so by only implementing the first part we are not assured we will get reasonable results. A last idea would be to use a library provided by [Joshua Gogings](https://joshuagoings.com/2017/04/28/integrals/) which calculates the two-body integrals of Polynomial · Gaussians, which we can apply to our case since we will use the eigenstates of the Quantum Harmonic oscillator. A few changes would have to be made to his code in order to make it work for our case where we have different harmonic parabolic profiles in the XY plane and in the z axis.
 
 We will have to decide how to solve this issue soon and implement a way to compute this integrals.
 
-On the other hand the rest of the Hartree Fock solver is already implemented. We have a class that aranges the integrals and gets them into a file from which they can be read to compute the Fock matrix. From there, the Self Consistent iteration can be performed and the energy and density matrix computed. 
+On the other hand the rest of the Hartree Fock solver is already implemented. We have a class that arranges the integrals and gets them into a file from which they can be read to compute the Fock matrix. From there, the Self Consistent Field iteration can be performed and the energy and density matrix computed. 
 
 Finally, the pieces of code that do work were used to INTRODUCE COMPUTATIONS OF HeH with integrals from the webpage!!!!!!
 
