@@ -1,5 +1,7 @@
 import numpy as np
 from scipy import special
+from scipy import integrate
+
 
 #######################################################################################
 # Hermite and associated Laguerre polynomials
@@ -141,6 +143,45 @@ def HO_wf(x, n, omega=OMEGA_X):
 	"""
 	return omega**0.25 * Hermite_pol(np.sqrt(omega)*x, n) * np.exp(-omega*x**2 / 2) / np.sqrt(2**n * np.math.factorial(n) * np.sqrt(np.pi))
 
+def HO_wf_abs(x,n,omega = OMEGA_X):
+	"""
+	Evaluates the absolute value of the n^th eigenfunction of the Harmonic Oscillator at x.
+	The units of x are sqrt(hbar/m*omega). 
+
+	Parameters
+	==========
+	x : float or np.ndarray(N)
+		Values in which to evaluate eigenfunction
+	n : int
+		Number of the eigenfunction
+	omega : float
+		Angular frequency of the Harmonic Oscillator
+
+	Returns
+	=======
+	float or np.ndarray(N)
+	"""
+	return abs(HO_wf(x,n,omega))
+
+def HO_wf_xabs(x,n,omega =OMEGA_X):
+	"""
+	Evaluates the x times the absolute value of the n^th eigenfunction of the Harmonic Oscillator at x.
+	The units of x are sqrt(hbar/m*omega). 
+
+	Parameters
+	==========
+	x : float or np.ndarray(N)
+		Values in which to evaluate eigenfunction
+	n : int
+		Number of the eigenfunction
+	omega : float
+		Angular frequency of the Harmonic Oscillator
+
+	Returns
+	=======
+	float or np.ndarray(N)
+	"""
+	return x*abs(HO_wf(x,n,omega))
 
 def HO_wf_3D(x, y, z, nx, ny, nz, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEGA_Z):
 	"""
@@ -207,6 +248,36 @@ def HO_wf_3D_basis(R, k, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEGA_Z):
 
 	return psi
 
+def basis_radius(k):
+		"""
+		Calculates the inverse of the mean radius of an element of the basis. The biggest 
+		radius in the three directions is taken.
+
+		Parameters
+		----------
+		k: int
+			Indx that specifies the base element
+
+		Returns
+		----------
+		alpha : float
+			Inverse of the mean radius
+		"""
+		nx, ny, nz = index_to_q_numbers(k)
+		
+		alphax = integrate.quad(HO_wf_abs, [0,np.inf], args=nx)/integrate.quad(HO_wf_xabs, [0,np.inf], args=nx)
+
+		if (nx == ny):
+			alphay = alphax
+		else:
+			alphay = integrate.quad(HO_wf_abs, [0,np.inf], args=ny)/integrate.quad(HO_wf_xabs, [0,np.inf], args=ny)
+
+		if ((nx == ny)or(ny == nz)):
+			alphaz = alphax
+		else:
+			alphaz = integrate.quad(HO_wf_abs, [0,np.inf], args=nz)/integrate.quad(HO_wf_xabs, [0,np.inf], args=nz)
+		
+		return min(alphax,alphay,alphaz)
 
 def two_body_integrand(R, indices):
 	"""
@@ -214,11 +285,12 @@ def two_body_integrand(R, indices):
 
 	Parameters
 	----------
-	p, q, r, s: int
-		Indices that specify the <pr|g|qs> integral
+
 	R: np.ndarray(6,N)
 		Positions of the two electrons x1,y1,z1,x2,y2,z2 
 		at N diferent coordinates (to evaluate random walkers simultaneously)
+	indices: np.ndarray(4)
+		Indices of the basis functions 
 
 	Returns
 	----------
@@ -227,13 +299,40 @@ def two_body_integrand(R, indices):
 	"""
 	p,q,r,s = indices[0],indices[1],indices[2],indices[3]
 
+	alpha, beta, gamma, delta = basis_radius(p), basis_radius(q), basis_radius(r), basis_radius(s)
+
+	a = alpha + beta
+	b = gamma + delta
+
+	R[0:3] = a**(-0.5)*R[0:3]
+	R[3:6] = b**(-0.5)*R[3:6]
+
 	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
 	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
 	r12 = abs(r1-r2)
 
-	I = HO_wf_3D_basis(R[0:3],p)*HO_wf_3D_basis(R[3:6],r)*(1/r12)*HO_wf_3D_basis(R[0:3],q)*HO_wf_3D_basis(R[3:6],s)
+	I = (a*b)**(-1.5)*HO_wf_3D_basis(R[0:3],p)*HO_wf_3D_basis(R[3:6],r)*(1/r12)*HO_wf_3D_basis(R[0:3],q)*HO_wf_3D_basis(R[3:6],s)
 
 	return I
+
+def sampling_function(R):
+		"""
+		Function used to generate the sampling for the Monte Carlo Method.
+
+		Parameters
+		----------
+		R: np.ndarray(6)
+			Coordinates of the position of 2 electrons 
+
+		Returns
+		----------
+		value : float
+			Value of the sampling function at point R
+		"""
+
+		value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2))
+
+		return value
 
 
 #######################################################################################
@@ -283,7 +382,6 @@ def He_wf_basis(R,k):
 
 def He_two_body_integrand(x1,y1,z1,x2,y2,z2,p,q,r,s):
 
-	#p,q,r,s = indices[0],indices[1],indices[2],indices[3]
 	R=np.array([x1,y1,z1,x2,y2,z2])
 	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
 	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)

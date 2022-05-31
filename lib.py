@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.linalg import eigh
+from scipy import integrate
 import os
 
 import mc_integration as mc
@@ -182,13 +183,18 @@ class integral_master():
 		N_walkers = 400
 		N_steps = 10000
 		N_skip = 1000
+
 		integrand = bs.two_body_integrand
 		indices = np.array([p,r,q,s])
 		dimension = 6
+
+		sampling = bs.sampling_function
 		
-		I = mc.MC_integration(integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size)
+		I = mc.MC_integration(sampling, integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size)
 
 		return I
+
+	
 
 
 def create_F_matrix(rho, integrals):
