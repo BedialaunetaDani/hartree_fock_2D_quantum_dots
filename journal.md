@@ -155,6 +155,28 @@ Finally, in [checks.ipynb](558046059d7503cc8c8dfd101ced83fab0027a61), we will pe
 
 ### Progress
 
+1. @abermejillo made some adaptations to the code from last project but found some issues: more on this bellow.
+2. @dbedialaunetar implmented the necessary code that stores values of the integrals avoiding reduncancies: [commit](21c180a03c2ce204f1ad1f65691bcb974c7bb8a5)
+3. @mserraperalta implemented code that takes the values of the integrals from a file and generates the matrices J, K and F: [commit](f3fae22649ce757932faaadebb16e41399ed2b65)
+4. @mserraperalta implemented functions that compute the groundstate energy and the density matrix: [commit](f3fae22649ce757932faaadebb16e41399ed2b65)
+5. Not done because the integrals still need to be solved
+6. @mserraperalta and @abermejillo started implementing code to test in the Helium atom: [commit1](7d6990f9d0121e4560ccd40b72e5abee5d0c9112) and [commit2](d0e2456285a6764d02e88bea9d8f1357f6ab9779)
+
+The most complicated step of the HF implementation is the computation of the two electron integrals. They correspond to `$\braket{pr|g|qs}$`, defined in the precious week. Our intention was to adapt the code from the previous project to implement Monte Carlo integration. however, there's a step that needs to be done, which is convert the integrand into a product of a probability distribution times another function. A possible way of doing it would be to express the integrand as
+
+```math
+\braket{pr|g|qs} = \int d\bm{r_1} d\bm{r_2} \phi_p(\bm{r_1})\phi_r(\bm{r_2})r_{12}^{-1}  \phi_q(\bm{r_1})\phi_s(\bm{r_2}) 
+=  \int d\bm{r_1} d\bm{r_2} |\phi_p(\bm{r_1})\phi_r(\bm{r_2})|^2  \frac{\phi_q(\bm{r_1})\phi_s(\bm{r_2})}{\phi_p(\bm{r_1})\phi_r(\bm{r_2})}r_{12}^{-1}.
+```
+
+However we are not sure whether this procedure is correct. Another way would be to follow [this paper](https://aip.scitation.org/doi/10.1063/1.5114703). In it they simply introduce another probability distribution based on a simple gaussian. Nevertheless, the paper continues doing other implementations to actually get its results, so by only implementing the first part we are not assured we will get reasonable results. A last idea would be to use a library provided by [Joshua Gogings](https://joshuagoings.com/2017/04/28/integrals/) which calculates the two-body integrals of Polynomial · Gaussians, which we can apply to our case since we will use the eigenstates of the Quantum Harmonic oscillator. A few changes would have to be made to his code in order to make it work for our case where we have different harmonic parabolic profiles in the XY plane and in the z axis.
+
+We will have to decide how to solve this issue soon and implement a way to compute this integrals.
+
+On the other hand the rest of the Hartree Fock solver is already implemented. We have a class that arranges the integrals and gets them into a file from which they can be read to compute the Fock matrix. From there, the Self Consistent Field iteration can be performed and the energy and density matrix computed. 
+
+Finally, the pieces of code that do work were used to calculate the energy of the He-H molecule because we could use the values of the two electron integrals, one electron integrals and overlap matrix that we found in a webpage explaining the Hartree-Fock algorithm with this example see (`check.ipynb`). After adding manually the values of the integrals in our code, we got the same results for the He-H energy compared to the website, and thus we can conclude that our code works correctly. Noteworthy, the obtained energy is different than the experimental one because the bond distance of the molecule has not been optimized. 
+
 
 (due 30 May 2022, 23:59)
 
