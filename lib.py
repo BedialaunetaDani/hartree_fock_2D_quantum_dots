@@ -90,7 +90,7 @@ class integral_master():
 					integral_dict_2[(r, q, s, p)] = I
 					integral_dict_2[(s, p, r, q)] = I
 					integral_dict_2[(s, q, r, p)] = I
-		print(integral_dict_2)
+
 		np.save(file_name, np.array([integral_dict_1, integral_dict_2]))
 
 		self.load_integrals(file_name)
@@ -130,7 +130,6 @@ class integral_master():
 			Value of the h_pq integral
 		"""
 
-		print(self.integral_dict_1)
 		I = self.integral_dict_1[(p, q)]
 
 		return I
@@ -225,17 +224,16 @@ def create_F_matrix(rho, integrals):
     F: np.ndarray(N, N)
         Fock matrix
     """
-
+	
     Nbasis = rho.shape[0]
     F = np.zeros((Nbasis, Nbasis))
 
-    for p in range(Nbasis):
+    for p in range( Nbasis ):
         for q in range(Nbasis):
             F[p, q] += integrals.get_1(p+1, q+1) # add h matrix
             for r in range(Nbasis):
                 for s in range(Nbasis):
                     F[p, q] += rho[r,s]*(integrals.get_2(p+1, q+1, r+1, s+1) - 0.5*integrals.get_2(p+1, r+1, q+1, s+1))
-
     return F
 
 def density_matrix(C, N_electrons):
@@ -290,7 +288,7 @@ def total_energy(rho, F, integrals):
 
 	for p in range(Nbasis):
 		for q in range(Nbasis):
-			E += 0.5*rho[p,q]*(integrals.get_1(p,q) + F[p,q])
+			E += 0.5*rho[p,q]*(integrals.get_1(p+1,q+1) + F[p,q])
 
 	return E
 
