@@ -46,15 +46,16 @@ class integral_master():
 		"""
 
 		if file_name in os.listdir():
-			print("Integral file already exsists. Not computing the integrals. ")
+			print("Integral file already exists. Not computing the integrals. ")
+			self.load_integrals(file_name)
 			return
 
 		integral_dict_1 = {}
 		integral_dict_2 = {}
 
 		# 1-body integrals
-		for p in range(1, self.dimension+1):
-			for q in range(1, self.dimension+1):
+		for p in range(1, self.dimension + 1):
+			for q in range(1, self.dimension + 1):
 				if p == q:
 					I = self.calculate_1(p, q)
 				else:
@@ -63,26 +64,28 @@ class integral_master():
 				integral_dict_1[(p, q)] = I
 
 		# 2-body integrals
-		for p in range(1, self.dimension+1):
-			for q in range(1, p+1):
+		for p in range(1, self.dimension + 1):
+			for q in range(1, p + 1):
 				for r in range(1, p):
-					for s in range(1, r+1):
+					for s in range(1, r + 1):
 						I = self.calculate_2(p, r, q, s)
-
+					
 						integral_dict_2[(p, r, q, s)] = I
 						integral_dict_2[(q, r, p, s)] = I
 						integral_dict_2[(p, s, q, r)] = I
 						integral_dict_2[(r, p, s, q)] = I
 				r = p
-				for s in range(1, q+1):
+				for s in range(1, q + 1):
 					I = self.calculate_2(p, r, q, s)
-					
+				
 					integral_dict_2[(p, r, q, s)] = I
 					integral_dict_2[(q, r, p, s)] = I
 					integral_dict_2[(p, s, q, r)] = I
 					integral_dict_2[(r, p, s, q)] = I
-
+		print(integral_dict_2)
 		np.save(file_name, np.array([integral_dict_1, integral_dict_2]))
+
+		self.load_integrals(file_name)
 
 		return
 
@@ -100,7 +103,7 @@ class integral_master():
 		None
 		"""
 
-		self.integral_dict_1, self.integral_dict_2 = np.load(file_name)
+		self.integral_dict_1, self.integral_dict_2 = np.load(file_name, allow_pickle=True)
 
 		return
 
@@ -119,6 +122,7 @@ class integral_master():
 			Value of the h_pq integral
 		"""
 
+		print(self.integral_dict_1)
 		I = self.integral_dict_1[(p, q)]
 
 		return I
@@ -190,43 +194,41 @@ class integral_master():
 
 		sampling = bs.sampling_function
 		
-		I, deltaI, acceptance_ratio, trial_move = mc.MC_integration(sampling, integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size)
+		I, deltaI, acceptance_ratio, trial_move = mc.MC_integration(sampling, integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size, N_cores=1)
 
 		return I
-
 	
 
 
 def create_F_matrix(rho, integrals):
-	"""
-	Creates the Fock matrix with coefficients C, given by
-	F[p,q] = h[p,q] + 2*J[p,q] - K[p,q]
+    """
+    Creates the Fock matrix with coefficients C, given by
+    F[p,q] = h[p,q] + 2J[p,q] - K[p,q]
 
-	Parameters
-	----------
-	rho: np.ndarray(N, N)
-		Density matrix of the system
-	integrals : two_body_integrals() class
-		Class with all the information regarding the <pr|g|qs> integrals
+    Parameters
+    ----------
+    rho: np.ndarray(N, N)
+        Density matrix of the system
+    integrals : two_body_integrals() class
+        Class with all the information regarding the <pr|g|qs> integrals
 
-	Returns
-	-------
-	F: np.ndarray(N, N)
-		Fock matrix
-	"""
+    Returns
+    -------
+    F: np.ndarray(N, N)
+        Fock matrix
+    """
 
-	Nbasis = rho.shape[0]
-	F = np.zeros((Nbasis, Nbasis))
+    Nbasis = rho.shape[0]
+    F = np.zeros((Nbasis, Nbasis))
 
-	for p in range(Nbasis):
-		for q in range(Nbasis):
-			F[p, q] += integrals.get_1(p, q) # add h matrix
-			for r in range(Nbasis):
-				for s in range(Nbasis):
-					F[p, q] += rho[r,s]*(integrals.get_2(p, q, r, s) - 0.5*integrals.get_2(p, r, q, s))
+    for p in range(Nbasis):
+        for q in range(Nbasis):
+            F[p, q] += integrals.get_1(p+1, q+1) # add h matrix
+            for r in range(Nbasis):
+                for s in range(Nbasis):
+                    F[p, q] += rho[r,s]*(integrals.get_2(p+1, q+1, r+1, s+1) - 0.5*integrals.get_2(p+1, r+1, q+1, s+1))
 
-	return F
-
+    return F
 
 def density_matrix(C, N_electrons):
 	"""
