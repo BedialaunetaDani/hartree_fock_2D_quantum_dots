@@ -190,7 +190,7 @@ class integral_master():
 
 		sampling = bs.sampling_function
 		
-		I = mc.MC_integration(sampling, integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size)
+		I, deltaI, acceptance_ratio, trial_move = mc.MC_integration(sampling, integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size)
 
 		return I
 

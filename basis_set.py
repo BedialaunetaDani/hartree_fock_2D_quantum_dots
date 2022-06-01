@@ -161,7 +161,7 @@ def HO_wf_abs(x,n,omega = OMEGA_X):
 	=======
 	float or np.ndarray(N)
 	"""
-	return abs(HO_wf(x,n,omega))
+	return np.absolute(HO_wf(x,n,omega))
 
 def HO_wf_xabs(x,n,omega =OMEGA_X):
 	"""
@@ -181,7 +181,7 @@ def HO_wf_xabs(x,n,omega =OMEGA_X):
 	=======
 	float or np.ndarray(N)
 	"""
-	return x*abs(HO_wf(x,n,omega))
+	return x*np.absolute(HO_wf(x,n,omega))
 
 def HO_wf_3D(x, y, z, nx, ny, nz, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEGA_Z):
 	"""
@@ -265,17 +265,17 @@ def basis_radius(k):
 		"""
 		nx, ny, nz = index_to_q_numbers(k)
 		
-		alphax = integrate.quad(HO_wf_abs, [0,np.inf], args=nx)/integrate.quad(HO_wf_xabs, [0,np.inf], args=nx)
+		alphax = integrate.quad(HO_wf_abs, 0, np.inf, args=nx)/integrate.quad(HO_wf_xabs, 0, np.inf, args=nx)
 
 		if (nx == ny):
 			alphay = alphax
 		else:
-			alphay = integrate.quad(HO_wf_abs, [0,np.inf], args=ny)/integrate.quad(HO_wf_xabs, [0,np.inf], args=ny)
+			alphay = integrate.quad(HO_wf_abs, 0, np.inf, args=ny)/integrate.quad(HO_wf_xabs, 0, np.inf, args=ny)
 
 		if ((nx == ny)or(ny == nz)):
 			alphaz = alphax
 		else:
-			alphaz = integrate.quad(HO_wf_abs, [0,np.inf], args=nz)/integrate.quad(HO_wf_xabs, [0,np.inf], args=nz)
+			alphaz = integrate.quad(HO_wf_abs, 0, np.inf, args=nz)/integrate.quad(HO_wf_xabs, 0, np.inf, args=nz)
 		
 		return min(alphax,alphay,alphaz)
 
@@ -329,8 +329,11 @@ def sampling_function(R):
 		value : float
 			Value of the sampling function at point R
 		"""
-
-		value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2))
+		if R.ndim>1:
+			value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=1))
+		else:
+			value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=0))
+		#print("sampled value",value)
 
 		return value
 
