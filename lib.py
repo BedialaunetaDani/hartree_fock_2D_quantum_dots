@@ -74,6 +74,10 @@ class integral_master():
 						integral_dict_2[(q, r, p, s)] = I
 						integral_dict_2[(p, s, q, r)] = I
 						integral_dict_2[(r, p, s, q)] = I
+						integral_dict_2[(q, s, p, r)] = I
+						integral_dict_2[(r, q, s, p)] = I
+						integral_dict_2[(s, p, r, q)] = I
+						integral_dict_2[(s, q, r, p)] = I
 				r = p
 				for s in range(1, q + 1):
 					I = self.calculate_2(p, r, q, s)
@@ -82,6 +86,10 @@ class integral_master():
 					integral_dict_2[(q, r, p, s)] = I
 					integral_dict_2[(p, s, q, r)] = I
 					integral_dict_2[(r, p, s, q)] = I
+					integral_dict_2[(q, s, p, r)] = I
+					integral_dict_2[(r, q, s, p)] = I
+					integral_dict_2[(s, p, r, q)] = I
+					integral_dict_2[(s, q, r, p)] = I
 		print(integral_dict_2)
 		np.save(file_name, np.array([integral_dict_1, integral_dict_2]))
 
