@@ -381,11 +381,40 @@ def He_wf(x, y, z, n):
 
 
 def He_wf_basis(R,k):
+	"""
+	Evaluates the k^th eigenfunction of the Hydrogen atom with exponential coefficient alpha_i. 
+	The units of x are atomic units. 
+
+	Parameters
+	==========
+	R : np.ndarray(3,N)
+		Position in which to evaluate the wave function
+	k : int
+		Number of the wave function
+
+	Returns
+	=======
+	float or np.ndarray(N)
+	"""
 	return He_wf(R[0],R[1],R[2],k)
 
 
 def He_two_body_integrand(x1,y1,z1,x2,y2,z2,p,q,r,s):
+	"""
+	Integrad that goes into the monte carlo method in order to compute the 
+	two electron integrals.
 
+	Parameters
+	==========
+	x1,y1,z1,x2,y2,z2 : float or np.ndarray(N)
+		Position in which to evaluate the wave function
+	p,q,r,s : int
+		Indices of the wave function
+
+	Returns
+	=======
+	float or np.ndarray(N)
+	"""
 	R=np.array([x1,y1,z1,x2,y2,z2])
 	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
 	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
