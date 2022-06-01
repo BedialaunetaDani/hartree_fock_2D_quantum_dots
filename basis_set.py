@@ -310,8 +310,8 @@ def two_body_integrand(R, indices):
 	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
 	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
 	r12 = abs(r1-r2)
-
-	I = (a*b)**(-1.5)*HO_wf_3D_basis(R[0:3],p)*HO_wf_3D_basis(R[3:6],r)*(1/r12)*HO_wf_3D_basis(R[0:3],q)*HO_wf_3D_basis(R[3:6],s)
+	print(np.shape(R))
+	I = (a*b)**(-1.5)*HO_wf_3D_basis(R[0:3],p)*HO_wf_3D_basis(R[3:6],r)*(1/r12)*HO_wf_3D_basis(R[0:3],q)*HO_wf_3D_basis(R[3:6],s)/sampling_function(R[0:6])
 
 	return I
 
@@ -329,10 +329,10 @@ def sampling_function(R):
 		value : np.ndarray(N)
 			Value of the sampling function at points R
 		"""
-
-		if R.ndim>1:
+		if R.ndim==3:
+			value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=2))
+		if R.ndim==2:
 			value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=1))
-			
 		else:
 			value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=0))
 
