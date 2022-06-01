@@ -10,7 +10,7 @@ import os
 
 # ---WALKER GENERATION---
 
-def random_walker(function, indices, N_steps, init_point, trial_move):
+def random_walker(function, N_steps, init_point, trial_move):
 	"""
 	Returns steps of a random walker that follows a Markov chain given a probability
 	density function using the Metropolis algorithm. 
@@ -45,7 +45,7 @@ def random_walker(function, indices, N_steps, init_point, trial_move):
 	for i in np.arange(1, N_steps):
 
 		next_point = steps[i-1] + np.random.normal(0, trial_move, size=dim)
-		step_acceptance = function(next_point, indices)/function(steps[i-1], indices)
+		step_acceptance = function(next_point)/function(steps[i-1])
 		acceptance_probability[i] = min(step_acceptance,1)
 
 		if (np.random.rand(1) <= step_acceptance).all():
@@ -57,7 +57,7 @@ def random_walker(function, indices, N_steps, init_point, trial_move):
 	return steps, acceptance_probability, acceptance_ratio
 
 
-def random_walkers(function, indices, N_steps, init_points, trial_move):
+def random_walkers(function, N_steps, init_points, trial_move):
 	"""
 	Returns steps of N_walkers random walkers that follows a Markov chain given a probability
 	density function using the Metropolis algorithm. 
@@ -92,7 +92,7 @@ def random_walkers(function, indices, N_steps, init_points, trial_move):
 	for i in np.arange(1, N_steps):
 
 		next_point = steps[i-1] + np.random.normal(0, trial_move, size=(N_walkers,dim))
-		step_acceptance = np.minimum(function(next_point, indices)/function(steps[i-1], indices),1)
+		step_acceptance = np.minimum(function(next_point)/function(steps[i-1]),1)
 		acceptance_probability[i] = step_acceptance[0]
 		to_change = np.where(np.random.rand(N_walkers) <= step_acceptance)
 
@@ -130,7 +130,7 @@ def rand_init_point(system_size, dim, N_points):
 	return init_point
 
 
-def dev_acceptance_ratio(trial_move, function, indices, dim, N_av=100):
+def dev_acceptance_ratio(trial_move, function, dim, N_av=100):
 	"""
 	Returns the deviation of the acceptance ratio from 0.5 for a random walker with given N_av steps 
 
@@ -156,15 +156,15 @@ def dev_acceptance_ratio(trial_move, function, indices, dim, N_av=100):
 	steps[0] = np.zeros(dim)
 
 	
-	print('value f 1',function(np.array([0,0,0,1,1,1]),np.array([1,1,1,1])))
-	print('value f 2',function(np.array([1,1,1,1.5,1.5,1.5]),np.array([1,1,1,1])))
-	print('value f 3',function(np.array([2,2,2,2.5,2,2]),np.array([1,1,1,1])))
-	print('value f 4',function(np.array([3,3,3,3.5,3,3]),np.array([1,1,1,1])))
+	# print('value f 1',function(np.array([0,0,0,1,1,1]),np.array([1,1,1,1])))
+	# print('value f 2',function(np.array([1,1,1,1.5,1.5,1.5]),np.array([1,1,1,1])))
+	# print('value f 3',function(np.array([2,2,2,2.5,2,2]),np.array([1,1,1,1])))
+	# print('value f 4',function(np.array([3,3,3,3.5,3,3]),np.array([1,1,1,1])))
 
 	for i in np.arange(1, N_av):
 		next_point = steps[i-1] + np.random.normal(scale=trial_move, size=(dim))
 		#print(next_point,function)
-		ratio = min(function(next_point, indices)/function(steps[i-1], indices), 1)
+		ratio = min(function(next_point)/function(steps[i-1]), 1)
 		if np.random.rand(1) <= ratio:
 			steps[i] = next_point
 		else:
@@ -173,12 +173,12 @@ def dev_acceptance_ratio(trial_move, function, indices, dim, N_av=100):
 
 	dev_ratio = acceptance_ratio/N_av - 0.5
 
-	print('dev', dev_ratio)
+	#print('dev', dev_ratio)
 
 	return dev_ratio
 
 
-def find_optimal_trial_move(function, indices, dim, trial_move_init, maxiter=5000, N_av=2000, tol=0.05):
+def find_optimal_trial_move(sampling, dim, trial_move_init, maxiter=5000, N_av=2000, tol=0.05):
 	"""
 	Returns trial_move such that the corresponding acceptance ratio is 0.5+-tol. 
 
@@ -203,7 +203,7 @@ def find_optimal_trial_move(function, indices, dim, trial_move_init, maxiter=500
 		trial_move such that the corresponding acceptance ratio is 0.5 +- tol
 	"""
 
-	arguments = (function, indices, dim, N_av)
+	arguments = (sampling, dim, N_av)
 
 	# Find a zero in dev_av_rate between 10*trial_move_init and trial_move_init/100,
 	# the function must be of oposite signs at the two points
@@ -214,14 +214,16 @@ def find_optimal_trial_move(function, indices, dim, trial_move_init, maxiter=500
 
 #---MONTE CARLO INTEGRATION---
 
-def MC_integration_core(function, indices, dim, trial_move, file_name, N_steps=5000, N_walkers=250, N_skip=0, L_start=1):
+def MC_integration_core(sampling, function, indices, dim, trial_move, file_name, N_steps=5000, N_walkers=250, N_skip=1000, L_start=1):
 	"""
 	Returns expectation value of the energy E(alpha) averaged over N_walkers random walkers using Monte Carlo integration. 
 	This function is used for parallelization of the MC integration. 
 
 	Parameters
 	----------
-	function : function(r)
+	sampling: function(r)
+		Function sampled by the random walkers 
+	function : function(r, indices)
 		Function integrated over r
 	dim : int
 		Dimension of the configuration space, i.e. number of degrees of freedom in the system
@@ -244,7 +246,7 @@ def MC_integration_core(function, indices, dim, trial_move, file_name, N_steps=5
 	"""
 
 	init_points = rand_init_point(L_start, dim, N_walkers)
-	steps, _, acceptance_ratio = random_walkers(function, indices,N_steps, init_points, trial_move)
+	steps, _, acceptance_ratio = random_walkers(sampling, N_steps, init_points, trial_move)
 	steps = steps[N_skip:, :, :]
 
 	E_alpha_walkers = MC_average_walkers(function, steps, indices)
@@ -258,13 +260,15 @@ def MC_integration_core(function, indices, dim, trial_move, file_name, N_steps=5
 	return 
 
 
-def MC_integration(function, indices, dim, N_steps=10000, N_walkers=400, N_skip=1000, L_start=5, N_cores=-1, trial_move=None):
+def MC_integration(sampling, function, indices, dim, N_steps=10000, N_walkers=400, N_skip=1000, L_start=5, N_cores=-1, trial_move=None):
 	"""
 	Returns expectation value of the energy E(alpha) averaged over N_walkers random walkers using Monte Carlo integration. 
 
 	Parameters
 	----------
-	function : function(r)
+	sampling(r):
+		Sampled function by the random walkers
+	function : function(r, indices)
 		Function integrated over r
 	dim : int
 		Dimension of the configuration space, i.e. number of degrees of freedom in the system
@@ -294,7 +298,7 @@ def MC_integration(function, indices, dim, N_steps=10000, N_walkers=400, N_skip=
 	"""
 
 	if trial_move is None:
-		trial_move = find_optimal_trial_move(function, indices, dim, L_start) 
+		trial_move = find_optimal_trial_move(sampling, dim, L_start) 
 		print("Optimal trial_move is", trial_move, end="\r")
 
 	# separate number of walkers for each core (multiprocessing)
@@ -303,7 +307,7 @@ def MC_integration(function, indices, dim, N_steps=10000, N_walkers=400, N_skip=
 	N_walkers_last_core = N_walkers - (N_cores-1)*N_walkers_per_core
 	list_N_walkers = np.array([N_walkers_per_core]*(N_cores - 1) + [N_walkers_last_core])
 
-	inputs = [(function, indices, dim, trial_move, "output_core{}.csv".format(i), N_steps, N, N_skip, L_start) for i, N in enumerate(list_N_walkers)]
+	inputs = [(sampling, function, indices, dim, trial_move, "output_core{}.csv".format(i), N_steps, N, N_skip, L_start) for i, N in enumerate(list_N_walkers)]
 
 	# multiprocessing
 	with multiprocessing.Pool(processes=N_cores) as pool: 
