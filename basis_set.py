@@ -310,7 +310,6 @@ def two_body_integrand(R, indices):
 	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
 	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
 	r12 = abs(r1-r2)
-	print(np.shape(R))
 	I = (a*b)**(-1.5)*HO_wf_3D_basis(R[0:3],p)*HO_wf_3D_basis(R[3:6],r)*(1/r12)*HO_wf_3D_basis(R[0:3],q)*HO_wf_3D_basis(R[3:6],s)/sampling_function(R[0:6])
 
 	return I
@@ -346,6 +345,7 @@ ALPHA_1 =  0.298073
 ALPHA_2 =  1.242567
 ALPHA_3 =  5.782948
 ALPHA_4 = 38.474970
+ALPHA = [ALPHA_1, ALPHA_2, ALPHA_3,ALPHA_4]
 
 def He_wf(x, y, z, n):
 	"""
@@ -399,7 +399,7 @@ def He_wf_basis(R,k):
 	return He_wf(R[0],R[1],R[2],k)
 
 
-def He_two_body_integrand(x1,y1,z1,x2,y2,z2,p,q,r,s):
+def He_two_body_integrand(R,indices):
 	"""
 	Integrad that goes into the monte carlo method in order to compute the 
 	two electron integrals.
@@ -415,12 +415,21 @@ def He_two_body_integrand(x1,y1,z1,x2,y2,z2,p,q,r,s):
 	=======
 	float or np.ndarray(N)
 	"""
-	R=np.array([x1,y1,z1,x2,y2,z2])
-	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
-	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
+	p, q, r, s = indices[0], indices[1], indices[2], indices[3]
+	alpha, beta, gamma, delta = 1/np.sqrt(2*ALPHA[p-1]), 1/np.sqrt(2*ALPHA[q-1]), 1/np.sqrt(2*ALPHA[r-1]), 1/np.sqrt(2*ALPHA[s-1])
+
+	a = alpha + beta
+	b = gamma + delta
+
+	R_u = R
+	R_u[0:3] = a**(-0.5)*R[0:3]
+	R_u[3:6] = b**(-0.5)*R[3:6]
+
+	r1 = np.sqrt(R_u[0]**2 + R_u[1]**2 + R_u[2]**2)
+	r2 = np.sqrt(R_u[3]**2 + R_u[4]**2 + R_u[5]**2)
 	r12 = abs(r1-r2)
 
-	I = He_wf_basis(R[0:3],p)*He_wf_basis(R[3:6],r)*(1/r12)*He_wf_basis(R[0:3],q)*He_wf_basis(R[3:6],s)
+	I = (a*b)**(-1.5)*He_wf_basis(R_u[0:3],p)*He_wf_basis(R_u[3:6],r)*(1/r12)*He_wf_basis(R_u[0:3],q)*He_wf_basis(R_u[3:6],s)/sampling_function(R[0:6])
 
 	return I
 	######

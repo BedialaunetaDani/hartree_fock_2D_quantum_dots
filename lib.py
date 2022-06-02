@@ -194,6 +194,7 @@ class integral_master():
 		N_walkers = 400
 		N_steps = 10000
 		N_skip = 1000
+		trial_move = 0.6
 
 		integrand = bs.two_body_integrand
 		indices = np.array([p,r,q,s])
@@ -201,7 +202,7 @@ class integral_master():
 
 		sampling = bs.sampling_function
 		
-		I, deltaI, acceptance_ratio, trial_move = mc.MC_integration(sampling, integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size, N_cores=1)
+		I, deltaI, acceptance_ratio, trial_move = mc.MC_integration(sampling, integrand, indices, dimension, N_steps, N_walkers, N_skip, system_size, N_cores=1, trial_move = trial_move)
 
 		return I
 	
