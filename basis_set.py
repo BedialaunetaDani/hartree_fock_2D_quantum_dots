@@ -143,6 +143,7 @@ def HO_wf(x, n, omega=OMEGA_X):
 	"""
 	return omega**0.25 * Hermite_pol(np.sqrt(omega)*x, n) * np.exp(-omega*x**2 / 2) / np.sqrt(2**n * np.math.factorial(n) * np.sqrt(np.pi))
 
+
 def HO_wf_abs(x,n,omega = OMEGA_X):
 	"""
 	Evaluates the absolute value of the n^th eigenfunction of the Harmonic Oscillator at x.
@@ -163,6 +164,7 @@ def HO_wf_abs(x,n,omega = OMEGA_X):
 	"""
 	return np.absolute(HO_wf(x,n,omega))
 
+
 def HO_wf_xabs(x,n,omega =OMEGA_X):
 	"""
 	Evaluates the x times the absolute value of the n^th eigenfunction of the Harmonic Oscillator at x.
@@ -182,6 +184,7 @@ def HO_wf_xabs(x,n,omega =OMEGA_X):
 	float or np.ndarray(N)
 	"""
 	return x*np.absolute(HO_wf(x,n,omega))
+
 
 def HO_wf_3D(x, y, z, nx, ny, nz, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEGA_Z):
 	"""
@@ -232,52 +235,52 @@ def HO_wf_3D_basis(R, k, omega_x=OMEGA_X, omega_y=OMEGA_X, omega_z=OMEGA_Z):
 	----------
 	k: int
 		Index of the basis from 1 to 14
-	R: np.ndarray(3,N)
+	R: np.ndarray(N_walkers, N_steps, 6)
 		Position of the electron x, y, z
-		at N diferent coordinates (to evaluate random walkers simultaneously)
 
 	Returns
 	----------
-	psi : np.ndarray(N)
+	psi : np.ndarray(N_walkers, N_steps)
 		Value of the wf at N points
 	"""
 	
 	nx, ny, nz = index_to_q_numbers(k)
-	
-	psi = HO_wf_3D(R[0], R[1], R[2], nx, ny, nz, omega_x, omega_y, omega_z)
+
+	psi = HO_wf_3D(R[:,:,0], R[:,:,1], R[:,:,2], nx, ny, nz, omega_x, omega_y, omega_z)
 
 	return psi
 
+
 def basis_radius(k):
-		"""
-		Calculates the inverse of the mean radius of an element of the basis. The biggest 
-		radius in the three directions is taken.
+	"""
+	Calculates the inverse of the mean radius of an element of the basis. The biggest 
+	radius in the three directions is taken.
+	Parameters
+	----------
+	k: int
+		Indx that specifies the base element
 
-		Parameters
-		----------
-		k: int
-			Indx that specifies the base element
-
-		Returns
-		----------
-		alpha : float
-			Inverse of the mean radius
-		"""
-		nx, ny, nz = index_to_q_numbers(k)
+	Returns
+	----------
+	alpha : float
+		Inverse of the mean radius
+	"""
+	nx, ny, nz = index_to_q_numbers(k)
 		
-		alphax = integrate.quad(HO_wf_abs, 0, np.inf, args=nx)[0]/integrate.quad(HO_wf_xabs, 0, np.inf, args=nx)[0]
+	alphax = integrate.quad(HO_wf_abs, 0, np.inf, args=nx)[0]/integrate.quad(HO_wf_xabs, 0, np.inf, args=nx)[0]
 
-		if (nx == ny):
-			alphay = alphax
-		else:
-			alphay = integrate.quad(HO_wf_abs, 0, np.inf, args=ny)[0]/integrate.quad(HO_wf_xabs, 0, np.inf, args=ny)[0]
+	if (nx == ny):
+		alphay = alphax
+	else:
+		alphay = integrate.quad(HO_wf_abs, 0, np.inf, args=ny)[0]/integrate.quad(HO_wf_xabs, 0, np.inf, args=ny)[0]
 
-		if ((nx == ny)or(ny == nz)):
-			alphaz = alphax
-		else:
-			alphaz = integrate.quad(HO_wf_abs, 0, np.inf, args=nz)[0]/integrate.quad(HO_wf_xabs, 0, np.inf, args=nz)[0]
+	if ((nx == ny) or (ny == nz)):
+		alphaz = alphax
+	else:
+		alphaz = integrate.quad(HO_wf_abs, 0, np.inf, args=nz)[0]/integrate.quad(HO_wf_xabs, 0, np.inf, args=nz)[0]
 		
-		return min(alphax,alphay,alphaz)
+	return min(alphax,alphay,alphaz)
+
 
 def two_body_integrand(R, indices):
 	"""
@@ -286,7 +289,7 @@ def two_body_integrand(R, indices):
 	Parameters
 	----------
 
-	R: np.ndarray(6,N)
+	R: np.ndarray(N_walkers, N_steps, 6)
 		Positions of the two electrons x1,y1,z1,x2,y2,z2 
 		at N diferent coordinates (to evaluate random walkers simultaneously)
 	indices: np.ndarray(4)
@@ -294,25 +297,27 @@ def two_body_integrand(R, indices):
 
 	Returns
 	----------
-	I : np.ndarray(N)
+	I : np.ndarray(N_walkers, N_steps)
 		
 	"""
-	p,q,r,s = indices[0],indices[1],indices[2],indices[3]
-
+	
+	p,q,r,s = indices
 	alpha, beta, gamma, delta = basis_radius(p), basis_radius(q), basis_radius(r), basis_radius(s)
 
 	a = alpha + beta
 	b = gamma + delta
 
-	R[0:3] = a**(-0.5)*R[0:3]
-	R[3:6] = b**(-0.5)*R[3:6]
+	R[:,:,0:3] = a**(-0.5)*R[:,:,0:3]
+	R[:,:,3:6] = b**(-0.5)*R[:,:,3:6]
 
-	r1 = np.sqrt(R[0]**2 + R[1]**2 + R[2]**2)
-	r2 = np.sqrt(R[3]**2 + R[4]**2 + R[5]**2)
+	r1 = np.sqrt(R[:,:,0]**2 + R[:,:,1]**2 + R[:,:,2]**2)
+	r2 = np.sqrt(R[:,:,3]**2 + R[:,:,4]**2 + R[:,:,5]**2)
 	r12 = abs(r1-r2)
-	I = (a*b)**(-1.5)*HO_wf_3D_basis(R[0:3],p)*HO_wf_3D_basis(R[3:6],r)*(1/r12)*HO_wf_3D_basis(R[0:3],q)*HO_wf_3D_basis(R[3:6],s)/sampling_function(R[0:6])
+		
+	I = (a*b)**(-1.5)*HO_wf_3D_basis(R[:,:,0:3],p)*HO_wf_3D_basis(R[:,:,3:6],r)*(1/r12)*HO_wf_3D_basis(R[:,:,0:3],q)*HO_wf_3D_basis(R[:,:,3:6],s)/sampling_function(R[:,:,0:6])
 
 	return I
+
 
 def sampling_function(R):
 		"""
@@ -320,20 +325,16 @@ def sampling_function(R):
 
 		Parameters
 		----------
-		R: np.ndarray(6, N)
+		R: np.ndarray(N_walkers, N_steps, 6)
 			Coordinates of the position of 2 electrons 
 
 		Returns
 		----------
-		value : np.ndarray(N)
+		value : np.ndarray(N_walkers, N_steps)
 			Value of the sampling function at points R
 		"""
-		if R.ndim==3:
-			value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=2))
-		if R.ndim==2:
-			value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=1))
-		else:
-			value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=0))
+		
+		value = 1/(2*np.pi)**3*np.exp(-0.5*np.sum(R**2,axis=-1))
 
 		return value
 

@@ -155,15 +155,8 @@ def dev_acceptance_ratio(trial_move, function, dim, N_av=100):
 	steps = np.zeros((N_av, dim))
 	steps[0] = np.zeros(dim)
 
-	
-	# print('value f 1',function(np.array([0,0,0,1,1,1]),np.array([1,1,1,1])))
-	# print('value f 2',function(np.array([1,1,1,1.5,1.5,1.5]),np.array([1,1,1,1])))
-	# print('value f 3',function(np.array([2,2,2,2.5,2,2]),np.array([1,1,1,1])))
-	# print('value f 4',function(np.array([3,3,3,3.5,3,3]),np.array([1,1,1,1])))
-
 	for i in np.arange(1, N_av):
 		next_point = steps[i-1] + np.random.normal(scale=trial_move, size=(dim))
-		#print(next_point,function)
 		ratio = min(function(next_point)/function(steps[i-1]), 1)
 		if np.random.rand(1) <= ratio:
 			steps[i] = next_point
@@ -172,8 +165,6 @@ def dev_acceptance_ratio(trial_move, function, dim, N_av=100):
 		acceptance_ratio += ratio
 
 	dev_ratio = acceptance_ratio/N_av - 0.5
-
-	#print('dev', dev_ratio)
 
 	return dev_ratio
 

@@ -3,7 +3,7 @@ from scipy.linalg import eigh
 from scipy import integrate
 import os
 
-import mc_integration as mc
+import MC_integration as mc
 import basis_set as bs
 
 
