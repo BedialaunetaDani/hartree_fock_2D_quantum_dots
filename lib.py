@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.linalg as scp
 import os
 
 
@@ -65,8 +66,8 @@ def SCF(N_electrons, integrals, S, max_iter_SCF=200, eps_SCF=1E-5, max_delta_rho
 
 			total_E_old = total_E
 			rho_old = rho
-
-		print("SCF not converged!\nRestarting again...")
+		if not converged:
+			print("SCF not converged!\nRestarting again...")
 
 	return
 
@@ -212,11 +213,10 @@ def MC_integration(integrand, cov, N_points=1000000):
 	I_err : float 
 		Error of the integral
 	"""
-
 	dim = cov.shape[0]
 	steps = np.random.multivariate_normal(np.zeros(dim), cov, N_points) 
-	I = np.average(steps)
-	I_err = np.std(steps)/np.sqrt(N_points)
+	I = np.average(integrand(steps))
+	I_err = np.std(integrand(steps))/np.sqrt(N_points)
 
 	return I, I_err
 
@@ -245,7 +245,7 @@ class integral_master():
 
 		return
 
-	def calculate(self, file_name, analyical_1, analyical_2=None, MC_args={"f_cov":None, "f_integrand":None, "N_points":1}):
+	def calculate(self, file_name, analytical_1, analytical_2=None, MC_args={"f_cov":None, "f_integrand":None, "N_points":1}):
 		"""
 		Calculates the one-electron and two-electron integrals and stores them in file. 
 		If no function for the analytical value is given, it uses Monte Carlo integration
@@ -279,17 +279,17 @@ class integral_master():
 		# 1-body integrals
 		for p in range(1, self.N_basis + 1):
 			for q in range(1, self.N_basis + 1):
-				integral_dict_1[(p, q)] = analyical_1(p, q)
+				integral_dict_1[(p, q)] = analytical_1(p, q)
 
 		# 2-body integrals
 		for p in range(1, self.N_basis + 1):
 			for q in range(1, p + 1):
 				for r in range(1, p):
 					for s in range(1, r + 1):
-						if analyical_2 is None:
+						if analytical_2 is None:
 							I = self.calculate_2(p, r, q, s, MC_args)
 						else:
-							I = analyical_2(p, r, q, s)
+							I = analytical_2(p, r, q, s)
 					
 						integral_dict_2[(p, r, q, s)] = I
 						integral_dict_2[(q, r, p, s)] = I
@@ -301,10 +301,10 @@ class integral_master():
 						integral_dict_2[(s, q, r, p)] = I
 				r = p
 				for s in range(1, q + 1):
-					if analyical_2 is None:
+					if analytical_2 is None:
 						I = self.calculate_2(p, r, q, s, MC_args)
 					else:
-						I = analyical_2(p, r, q, s)
+						I = analytical_2(p, r, q, s)
 				
 					integral_dict_2[(p, r, q, s)] = I
 					integral_dict_2[(q, r, p, s)] = I
@@ -335,7 +335,6 @@ class integral_master():
 		I : float
 			Value of the <pr|g|qs> integral
 		"""
-
 		cov = MC_args["f_cov"](p, r, q, s)
 		integrand = MC_args["f_integrand"](p, r, q, s)
 		N_points = MC_args["N_points"]
