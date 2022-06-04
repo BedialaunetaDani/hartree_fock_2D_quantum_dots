@@ -339,6 +339,27 @@ def sampling_function(R):
 		return value
 
 
+def calculate_1(self, p, q):
+	"""
+	Calculates the value of the h_pq integrals by direct integration
+
+	Parameters
+	----------
+	p, q: int
+		Indices that specify the h_pq integral
+
+	Returns
+	----------
+	I : float
+		Value of the h_pq integral
+	"""
+	nx,ny,nz = bs.index_to_q_numbers(p)
+
+	I = (p==q)*(bs.OMEGA_X*(nx + ny + 1) + bs.OMEGA_Z*(nz + 0.5)) # nx,ny,nz should come from the basis, so from p and q but how?
+
+	return I
+
+
 #######################################################################################
 # Basis functions for He from Jos book
 
