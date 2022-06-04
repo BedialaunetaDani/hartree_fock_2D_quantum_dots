@@ -183,9 +183,54 @@ Finally, the pieces of code that do work were used to calculate the energy of th
 ## Week 3
 
 ### Bullet List
-
+1. Correct the calculation of the $`<pr|g|qs>`$ using Monte Carlo (@abermejillo, @mserraperalta and @dbedialaunetar)
+1. Verify thorugh He (@abermejillo, @mserraperalta and @dbedialaunetar)
+1. Restructure the code to eliminate unused functions and files (@abermejillo, @mserraperalta and @dbedialaunetar)
+1. Obtain results for different numbers of electrons in the QD (@abermejillo, @mserraperalta and @dbedialaunetar)
 
 ### Progress
+1. The calculation of the integrals was finally succesful: add final commit of the lib
+1. The Helium computation was used to verify: add final commit 
+1. The code was properly restructured: see the project folder
+1. Results for the QD with different number of electrons were obtained: add commit of the jup notebook
+
+
+After many different attempts with the monte carlo integration we found the correct integration method. We start from the two-electron integral
+
+```math
+\braket{pr|g|qs} = \int d\bm{r_1} d\bm{r_2} \phi_p(\bm{r_1})\phi_r(\bm{r_2})r_{12}^{-1}  \phi_q(\bm{r_1})\phi_s(\bm{r_2}).
+```
+
+From where we can use the fact that the basis functions that we use always have some gaussian terms. We will use those as the sampling function ($`S(\bm{r_1},\bm{r_2})`$), and the rest will be the integrand ($`I(\bm{r_1},\bm{r_2})`$). In the case of the Helium atom the basis are just the gaussians and thus we sample from
+
+```math
+S(\bm{r_1},\bm{r_2}) = C_{norm}\phi_p(\bm{r_1})\phi_r(\bm{r_2})\phi_q(\bm{r_1})\phi_s(\bm{r_2}),
+``` 
+
+and we add up over
+
+```math
+I(\bm{r_1},\bm{r_2}) = (C_{norm}r_{12})^{-1}.
+``` 
+
+In the case of the Quantum dots the basis elements have the shape Gaussian(g) X Hermite(h). So in this case we sample from  
+
+```math
+S(\bm{r_1},\bm{r_2}) = C_{norm}g_p(\bm{r_1})g_r(\bm{r_2})g_q(\bm{r_1})g_s(\bm{r_2}),
+```
+
+and we add up over 
+
+```math
+I(\bm{r_1},\bm{r_2}) = h_p(\bm{r_1})h_r(\bm{r_2})h_q(\bm{r_1})h_s(\bm{r_2})/(C_{norm}r_{12}).
+``` 
+
+A good news from this approach is that we do not need the Metropolis algorithm anymore. We will sample from a gaussian, which can be done simply thorugh np.random.multivariate_normal. This reduces the complexity of the montecarlo integration quite a lot: no need to chose a system size, nor a trial move, we do not have different walkers, etc.
+
+Until here the discoveries. Now the implementations and the results obtained this week. First we took the Helium problem, which is easier and implemented all of this. It can be seen in this [commit](15c25e8e4851ebbedde17eeb61ea400dd096f429). With this implementation the two-electron integrals were correctly computed for the first time, and via the SCF we found a value for the groundstate energy of -2.8551 comparable to that obtained by Jos, -2.8552, and also to the exact value -2.903. 
+
+
+
 
 
 (due 6 June 2022, 23:59)
