@@ -268,7 +268,7 @@ class integral_master():
 		None
 		"""
 
-		if file_name in os.listdir():
+		if os.path.isfile(file_name):
 			print("Integral file already exists. Not computing the integrals. ")
 			self.load_integrals(file_name)
 			return
