@@ -7,7 +7,7 @@ import os
 #                  SELF-CONSISTENT FIELD
 ##########################################################
 
-def SCF(N_electrons, integrals, S, max_iter_SCF=200, eps_SCF=1E-5, max_delta_rho=0, C=None):
+def SCF(N_electrons, integrals, S, max_iter_SCF=200, eps_SCF=1E-5, max_delta_rho=0, C=None, print_E=True):
 	"""
 	Self-Consistent Field for Hartree Fock
 
@@ -58,19 +58,19 @@ def SCF(N_electrons, integrals, S, max_iter_SCF=200, eps_SCF=1E-5, max_delta_rho
 				rho = alfa*rho + (1 - alfa)*rho_old
 
 			total_E = total_energy(rho, F, integrals)
-			print("E = {:0.7f} | N(SCF) = {}".format(total_E, n_iterations))
+			if print_E: print("E = {:0.7f} | N(SCF) = {}".format(total_E, n_iterations))
 
 			if delta_rho(rho, rho_old) < eps_SCF: # checks convergence of SCF
 				converged = True
-				print("SCF CONVERGED! E = {:0.10f}".format(total_E))
+				if print_E: print("SCF CONVERGED! E = {:0.10f}".format(total_E))
 				break
 
 			total_E_old = total_E
 			rho_old = rho
 		if not converged:
-			print("SCF not converged!\nRestarting again...")
+			if print_E: print("SCF not converged!\nRestarting again...")
 
-	return
+	return total_E
 
 
 def create_F_matrix(rho, integrals):
@@ -269,7 +269,7 @@ class integral_master():
 		None
 		"""
 
-		if file_name in os.listdir():
+		if os.path.isfile(file_name):
 			print("Integral file already exists. Not computing the integrals. ")
 			self.load_integrals(file_name)
 			return
