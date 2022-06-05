@@ -53,7 +53,8 @@ def SCF(N_electrons, integrals, S, max_iter_SCF=200, eps_SCF=1E-5, max_delta_rho
 			rho = density_matrix(C, N_electrons)
 
 			if delta_rho(rho, rho_old) > max_delta_rho: # checks if change of rho is too large
-				alfa = np.random.rand()
+				#alfa = (np.random.rand()*0.4) + 0.6
+				alfa = 0.8
 				rho = alfa*rho + (1 - alfa)*rho_old
 
 			total_E = total_energy(rho, F, integrals)
@@ -283,6 +284,7 @@ class integral_master():
 
 		# 2-body integrals
 		for p in range(1, self.N_basis + 1):
+			print('Calculating two electron integrals: {}/{}\r'.format(p,self.N_basis+1))
 			for q in range(1, p + 1):
 				for r in range(1, p):
 					for s in range(1, r + 1):
