@@ -188,11 +188,13 @@ Finally, the pieces of code that do work were used to calculate the energy of th
 1. Restructure the code to eliminate unused functions and files (@abermejillo, @mserraperalta and @dbedialaunetar)
 1. Obtain results for different numbers of electrons in the QD (@abermejillo, @mserraperalta and @dbedialaunetar)
 
+(It did require intervention from all members to fulfill each of the tasks. It has been a trully collaborative project :) )
+
 ### Progress
-1. The calculation of the integrals was finally succesful: add final commit of the lib
-1. The Helium computation was used to verify: add final commit 
+1. The calculation of the integrals was finally succesful: [commit](6bd6a7639eb55dd6a7b7425fb76d6d59545f4256)
+1. The Helium computation was used to verify: [commit](9a0b7013a6e432bdee246e5e03b95941a34485eb)
 1. The code was properly restructured: see the project folder
-1. Results for the QD with different number of electrons were obtained: add commit of the jup notebook
+1. Results for the QD with different number of electrons were obtained: [commit](2a1722b172895ce311ed4e6c9df33f974d406458)
 
 
 After many different attempts with the monte carlo integration we found the correct integration method. We start from the two-electron integral
@@ -228,6 +230,20 @@ I(\bm{r_1},\bm{r_2}) = h_p(\bm{r_1})h_r(\bm{r_2})h_q(\bm{r_1})h_s(\bm{r_2})/(C_{
 A good news from this approach is that we do not need the Metropolis algorithm anymore. We will sample from a gaussian, which can be done simply thorugh np.random.multivariate_normal. This reduces the complexity of the montecarlo integration quite a lot: no need to chose a system size, nor a trial move, we do not have different walkers, etc.
 
 Until here the discoveries. Now the implementations and the results obtained this week. First we took the Helium problem, which is easier and implemented all of this. It can be seen in this [commit](15c25e8e4851ebbedde17eeb61ea400dd096f429). With this implementation the two-electron integrals were correctly computed for the first time, and via the SCF we found a value for the groundstate energy of -2.8551 comparable to that obtained by Jos, -2.8552, and also to the exact value -2.903. 
+
+From here we could now implement the computation of the Groundstate energies of Quantum dots with different sizes (different confining potentials) for number of electrons ranging from 2 to 14 (the maximum number of base functions we are using), but always an even number. The basis has been chosen to be the eigenstates of the harmonic oscillator, which is composed of Gaussians and Hermite polynomials, of which the gaussians are used to sample in the Monte Carlo scheme. The obtained results are satisfactory for N = 2 electrons, but differ considerably for any other grater number of electrons. It can be seen in the following graph
+
+![alt text](results/Energies_ac.png)
+
+The blue color represents a quantum dot with size lz = 4.95 nm and lx,y = 7.42 nm, while the red color represents a quantum dot with size lz = 4.95 nm and lx,y = 49.5 nm. The lines represent the results taken from the paper (Fujito et al. “Many-electron ground states in anisotropic parabolic QD.” Phys. Rev. B (1996)) computed with Unrestricted HF and the dots are computed with our code with Restricted HF as explained previously. The differences in the values of energy are thought to be due to the different HF approach utilised.
+
+In addition we can also take a look at the chemical potential.
+
+![alt text](results/chemicalpotential_ac.png)
+
+Here, we have made an interpolation to compute the energies of odd N. For that reason there's no change in the chemical potential for those steps. If we compare this result with the paper we see a partial qualitative agreement. The one for the small dot is not monotonous, while the one for the big dot is. However, nor the quantitative results nor the position and size of the jums is correctly reflected in our results. Again this is due to the use of RHF. 
+
+In conclusion we have developed a code that computes, via RHF, the groundstate of different molecular or atomic systems. We have used it to compute the groundstate of the HeH molecule, the Helium atom and an N electron quasi two dimensional quantum dot. The results for the HeH molecule, Helium and 2 electron Quantum dot agree with the literature, but it has been seen that UHF is needed to properly account for the electron-electron interaction in a system With higher number of electrons. 
 
 
 
