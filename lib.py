@@ -32,8 +32,9 @@ def SCF(N_electrons, integrals, S, max_iter_SCF=200, eps_SCF=1E-5, max_delta_rho
 
 	N_basis = S.shape[0]
 	converged = False
-
-	while not converged: # restart SCF if we reached maximum number of iterations
+	n_iterations2 = 0
+	max_iter_SCF2 = 20
+	while (not converged) and (n_iterations2 < max_iter_SCF2): # restart SCF if we reached maximum number of iterations
 		n_iterations = 0
 
 		if C is None: C = np.zeros((N_basis, N_basis))
@@ -52,23 +53,27 @@ def SCF(N_electrons, integrals, S, max_iter_SCF=200, eps_SCF=1E-5, max_delta_rho
 
 			rho = density_matrix(C, N_electrons)
 
-			if delta_rho(rho, rho_old) > max_delta_rho: # checks if change of rho is too large
+			
+			total_E = total_energy(rho, F, integrals, E, N_electrons)
+			if print_E: 
+				print("E = {:0.7f} | N(SCF) = {}".format(total_E, n_iterations))
+
+
+			if (delta_rho(rho, rho_old) > max_delta_rho) and (n_iterations != 1): # checks if change of rho is too large
 				alfa = np.random.rand()
-				#alfa = 0.8
 				rho = alfa*rho + (1 - alfa)*rho_old
-
-			total_E = total_energy(rho, F, integrals)
-			if print_E: print("E = {:0.7f} | N(SCF) = {}".format(total_E, n_iterations))
-
+				rho =2 * rho / np.sum([rho[i,i] for i in range(N_basis)])
+			
 			if delta_rho(rho, rho_old) < eps_SCF: # checks convergence of SCF
 				converged = True
 				if print_E: print("SCF CONVERGED! E = {:0.10f}".format(total_E))
 				break
 
-			total_E_old = total_E
+
 			rho_old = rho
 		if not converged:
 			if print_E: print("SCF not converged!\nRestarting again...")
+			n_iterations2 += 1
 
 	return total_E
 
@@ -132,33 +137,38 @@ def density_matrix(C, N_electrons):
 	return rho
 
 
-def total_energy(rho, F, integrals):
-	"""
-	Returns the density matrix of the system given its coefficients
+def total_energy(rho, F, integrals, epsk, N_electrons):
+    """
+    Returns the density matrix of the system given its coefficients
 
-	Parameters
-	----------
-	rho : np.ndarray(N_basis, N_basis)
-		Density matrix of the system
-	F : np.ndarray(N_basis, N_basis)
-		Fock matrix
-	integrals : class
-		Class with all the information regarding the <pr|g|qs> integrals
+    Parameters
+    ----------
+    rho : np.ndarray(N_basis, N_basis)
+        Density matrix of the system
+    F : np.ndarray(N_basis, N_basis)
+        Fock matrix
+    integrals : class
+        Class with all the information regarding the <pr|g|qs> integrals
 
-	Returns
-	-------
-	E : float
-		Total energy of the system
-	"""
+    Returns
+    -------
+    E : float
+        Total energy of the system
+    """
 
-	N_basis = rho.shape[0]
-	E = 0
+    N_basis = rho.shape[0]
+    E = 0
+    #print(N_basis, np.shape(epsk))
 
-	for p in range(N_basis):
-		for q in range(N_basis):
-			E += 0.5*rho[p,q]*(integrals.get_1(p+1,q+1) + F[p,q])
+    for p in range(N_basis):
+        for q in range(N_basis):
+            #E += 0.5*rho[p,q]*(integrals.get_1(p+1,q+1) + F[p,q])
+            E += 0.5*rho[p,q]*integrals.get_1(p+1,q+1)
+    for k in range(int(N_electrons)):
+        E += 0.5*sorted(epsk)[k]
 
-	return E
+    return E
+
 
 
 def delta_rho(rho, rho_old): 
@@ -185,7 +195,7 @@ def delta_rho(rho, rho_old):
 		for q in range(N_basis):
 			delta = delta + (rho[p,q] - rho_old[p,q])**2
 
-	return np.sqrt(delta)
+	return np.sqrt(delta)/N_basis**2
 
 
 ##########################################################
@@ -284,7 +294,7 @@ class integral_master():
 
 		# 2-body integrals
 		for p in range(1, self.N_basis + 1):
-			print('Calculating two electron integrals: {}/{}\r'.format(p,self.N_basis+1))
+			print('Calculating two electron integrals: {}/{}\r'.format(p,self.N_basis))
 			for q in range(1, p + 1):
 				for r in range(1, p):
 					for s in range(1, r + 1):
