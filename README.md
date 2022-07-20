@@ -12,9 +12,9 @@ The many-body wavefunction is approximated by expantion into a single particle b
 
 ## Literature references
 
-[1] Johnson, N. F., and M. Reina. "The accuracy of the Hartree-Fock approximation for quantum dots." Journal of Physics: Condensed Matter 4.47 (1992): L623.
+1. Johnson, N. F., and M. Reina. "The accuracy of the Hartree-Fock approximation for quantum dots." Journal of Physics: Condensed Matter 4.47 (1992): L623.
 
-[2] Pfannkuche, Daniela, Vidar Gudmundsson, and Peter A. Maksym. "Comparison of a Hartree, a Hartree-Fock, and an exact treatment of quantum-dot helium." Physical Review B 47.4 (1993): 2244.
+1. Pfannkuche, Daniela, Vidar Gudmundsson, and Peter A. Maksym. "Comparison of a Hartree, a Hartree-Fock, and an exact treatment of quantum-dot helium." Physical Review B 47.4 (1993): 2244.
 
-[3] Weinbub, Josef, and Robert Kosik. "Computational Perspective on Recent Advances in Quantum Electronics: From Electron Quantum Optics to Nanoelectronic Devices and Systems." Journal of Physics: Condensed Matter (2022).
+1. Weinbub, Josef, and Robert Kosik. "Computational Perspective on Recent Advances in Quantum Electronics: From Electron Quantum Optics to Nanoelectronic Devices and Systems." Journal of Physics: Condensed Matter (2022).
 
